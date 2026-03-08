@@ -2,13 +2,15 @@
 name: audit
 description: >
   Systematic audit toolkit for code, docs, security, and UI. Includes a pre-push
-  branch audit (8-category checklist with Clean/Minor/Blocking verdicts) plus four
+  branch audit (8-category checklist with Clean/Minor/Blocking verdicts) plus six
   deep-dive audits: code quality (duplication, inconsistency, simplification),
-  documentation brittleness, security vulnerability analysis, and UI design review
-  using CRAP principles. ALWAYS use this skill when the user wants to audit, review
-  before pushing, check their branch, sanity-check before a PR, look for duplication
-  or dead code, review docs for staleness, analyse security vulnerabilities, review
-  UI design, or apply design principles — even if they don't say "audit" explicitly.
+  documentation brittleness, documentation–code sync, language best practices,
+  security vulnerability analysis, and UI design review using CRAP principles.
+  ALWAYS use this skill when the user wants to audit, review before pushing, check
+  their branch, sanity-check before a PR, look for duplication or dead code, check
+  docs are up to date, review code against best practices, analyse security
+  vulnerabilities, review UI design, or apply design principles — even if they
+  don't say "audit" explicitly.
 ---
 
 # Audit
@@ -160,6 +162,58 @@ SKILL.md files, onboarding docs) for:
   like it was written for a moment in time rather than for the long term.
 
 The report should recommend specific rewrites, not just flag problems.
+
+## Documentation–code sync audit
+
+Spawn a sub-agent to verify that documentation actually matches the current state
+of the code. The brittleness audit (above) asks whether docs *will* break — this
+one asks whether they *already have*.
+
+- **API docs vs implementation** — do documented endpoints, parameters, return
+  types, and error codes match what the code actually does? Check REST routes,
+  GraphQL schemas, CLI flags, library APIs.
+- **Setup and install instructions** — do the steps in the README or getting-started
+  guide actually work? Are prerequisites listed correctly? Are environment variables
+  documented that the code actually reads?
+- **Architecture descriptions** — do diagrams or written descriptions of the system
+  architecture reflect the current module structure, data flow, and dependencies?
+  Flag components described in docs that no longer exist, and components in code
+  that docs don't mention.
+- **Config and feature flags** — are all configuration options documented? Are there
+  documented options that the code no longer reads, or code that reads undocumented
+  config?
+- **Examples and code snippets** — do inline examples in docs compile/run against
+  the current codebase? Flag examples that use deprecated APIs or deleted functions.
+
+For each discrepancy, show the doc excerpt and the conflicting code side by side,
+and recommend which one should change.
+
+## Language best practices audit
+
+Spawn a sub-agent to review the codebase against idiomatic best practices for
+each programming language used in the project. The agent should first identify
+which languages are present, then check each against its community standards:
+
+- **Python** — PEP 8 style, type hints on public APIs, context managers for
+  resources, dataclasses/attrs over raw dicts, avoiding mutable default arguments,
+  proper use of `__init__.py`, virtual environments
+- **JavaScript/TypeScript** — strict mode, `const`/`let` over `var`, async/await
+  over raw promises, proper error handling in async code, avoiding `any` in TS,
+  ESM over CommonJS where appropriate
+- **Go** — error handling (no ignored errors), proper use of goroutines and channels,
+  effective Go naming conventions, avoiding package-level state, using `context.Context`
+- **Rust** — ownership patterns, avoiding unnecessary `clone()`, proper error types
+  over `unwrap()`, using `clippy` suggestions, derive macros for common traits
+- **Java/Kotlin** — null safety, resource management (try-with-resources), immutable
+  collections where possible, avoiding raw types, proper logging frameworks
+- **Ruby** — Ruby style guide conventions, frozen string literals, proper use of
+  blocks/procs/lambdas, avoiding monkey-patching in production code
+- **Shell** — `set -euo pipefail`, quoting variables, avoiding eval, using `shellcheck`
+  patterns
+
+Only audit languages actually present in the project. The report should distinguish
+between style preferences (informational) and genuine anti-patterns that cause bugs
+or maintenance burden (actionable). Focus on the actionable ones.
 
 ## Security vulnerability audit
 
