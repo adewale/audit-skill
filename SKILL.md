@@ -1,16 +1,16 @@
 ---
 name: audit
 description: >
-  Systematic audit toolkit for code, docs, security, and UI. Includes a pre-push
-  branch audit (8-category checklist with Clean/Minor/Blocking verdicts) plus six
-  deep-dive audits: code quality (duplication, inconsistency, simplification),
-  documentation brittleness, documentation–code sync, language best practices,
-  security vulnerability analysis, and UI design review using CRAP principles.
-  ALWAYS use this skill when the user wants to audit, review before pushing, check
-  their branch, sanity-check before a PR, look for duplication or dead code, check
-  docs are up to date, review code against best practices, analyse security
-  vulnerabilities, review UI design, or apply design principles — even if they
-  don't say "audit" explicitly.
+  Comprehensive audit toolkit with 14 audit types. Includes a pre-push branch
+  audit (8-category checklist with Clean/Minor/Blocking verdicts) plus 13 deep-dive
+  audits run via sub-agents: code quality, documentation brittleness, docs-code sync,
+  language best practices, concurrency, resource management, test quality, feature
+  completeness, performance, bug patterns, design philosophy compliance, security
+  vulnerabilities, and UI design (CRAP principles). ALWAYS use this skill when the
+  user wants to audit, review before pushing, check their branch, look for
+  duplication or dead code, check docs, review test quality, find concurrency bugs,
+  check resource leaks, analyse security or performance, review UI design, verify
+  feature completeness, or check code against best practices or design principles.
 ---
 
 # Audit
@@ -214,6 +214,184 @@ which languages are present, then check each against its community standards:
 Only audit languages actually present in the project. The report should distinguish
 between style preferences (informational) and genuine anti-patterns that cause bugs
 or maintenance burden (actionable). Focus on the actionable ones.
+
+## Concurrency audit
+
+Spawn a sub-agent to audit the codebase for concurrency bugs. These are among the
+hardest bugs to find because they're often intermittent and don't show up in normal
+testing.
+
+- **Shared mutable state** — global variables, module-level dicts/lists, class
+  attributes modified by multiple threads/goroutines/tasks without synchronization.
+  Trace writes to shared state and check whether they're protected.
+- **Missing synchronization** — data races, unguarded concurrent map access (Go),
+  missing locks around read-modify-write sequences, async functions that modify
+  shared state without awaiting in order
+- **Goroutine/thread/task leaks** — spawned work that's never joined or cancelled,
+  missing context cancellation, channels that are never closed or drained, fire-and-
+  forget patterns with no error handling
+- **Deadlock risk** — lock ordering violations (acquiring A then B in one place, B
+  then A in another), holding locks across blocking I/O, channels with no buffer
+  where sender and receiver can both block
+- **Atomicity gaps** — check-then-act patterns without locks (e.g., check if key
+  exists then insert), non-atomic counter increments, time-of-check-to-time-of-use
+  (TOCTOU) bugs
+
+For each finding, describe the race scenario: what two operations can interleave
+and what goes wrong when they do.
+
+## Resource management audit
+
+Spawn a sub-agent to audit the codebase for resource leaks and cleanup failures.
+Leaked resources cause slow degradation — the app works fine in testing but fails
+under sustained load.
+
+- **File handles** — opened files without corresponding close, missing context
+  managers (Python `with`), missing `defer file.Close()` (Go), missing
+  try-with-resources (Java)
+- **Network connections** — HTTP clients without timeouts, unclosed response bodies,
+  database connections not returned to pool, WebSocket connections without cleanup
+  on disconnect
+- **Subprocesses** — spawned processes without `wait()`, zombie processes,
+  missing signal handling for graceful shutdown
+- **Event listeners and subscriptions** — listeners registered but never removed,
+  subscriptions without unsubscribe on teardown, leading to memory leaks in
+  long-running processes
+- **Temporary files and directories** — created but never cleaned up, missing
+  cleanup in error paths (file created, operation fails, file left behind)
+
+The report should note whether cleanup happens in all code paths, including error
+paths — resources opened before a try block but closed inside it are a common
+source of leaks.
+
+## Test quality audit
+
+Spawn a sub-agent to audit the test suite beyond simple coverage numbers. Existing
+tests can be worse than no tests if they give false confidence.
+
+- **Assertion quality** — tests that call functions but don't assert meaningful
+  properties, tests that only check "no exception thrown", assertions on
+  implementation details rather than behavior. A test with no assertions is just
+  a smoke test — label it accordingly.
+- **Test isolation** — tests that depend on execution order, shared mutable state
+  between tests (module-level lists that accumulate across tests), tests that
+  hit real networks or databases without mocking
+- **Flaky patterns** — time-dependent tests using `sleep()` instead of polling or
+  mocking, tests that depend on filesystem ordering, floating-point equality
+  checks, tests that race against async operations
+- **Property-based testing opportunities** — pure functions, serialization
+  roundtrips, parsers, validators, and codecs are ideal candidates. If the project
+  has these and only tests with a handful of examples, flag the opportunity.
+- **Missing negative tests** — are error paths tested? Do tests verify that invalid
+  input is rejected, not just that valid input is accepted?
+- **Test naming and organization** — can you tell what a test verifies from its
+  name? Are related tests grouped? Are test utilities/fixtures extracted where
+  they should be?
+
+The report should distinguish between tests that are *wrong* (give false
+confidence) and tests that are *weak* (could be stronger). Prioritize the wrong
+ones.
+
+## Feature completeness audit
+
+Spawn a sub-agent to compare what the project *claims* to support against what
+it *actually* implements. This catches the common pattern where documentation,
+specs, or READMEs describe features that were planned but never built, or were
+built and later removed without updating the docs.
+
+- **Documented features vs exports** — for libraries, check that every documented
+  function/class/method actually exists and is exported. For CLIs, check that every
+  documented flag/subcommand is actually implemented (not a stub that prints
+  "not yet implemented").
+- **Spec vs implementation** — if the project has spec files, design docs, or
+  feature lists, compare them against the codebase. Flag features described as
+  "done" or "implemented" that aren't.
+- **Route/endpoint coverage** — for APIs, check that every documented endpoint
+  exists and handles the documented methods. Flag routes that exist in code but
+  aren't documented, and documented routes that don't exist in code.
+- **Config completeness** — check that every documented config option is actually
+  read by the code, and that every config value the code reads is documented
+  somewhere.
+
+For each gap, note which side should change — is the feature actually needed
+(implement it) or was it abandoned (remove it from docs)?
+
+## Performance audit
+
+Spawn a sub-agent to review the codebase for performance issues that are
+detectable through static analysis. This isn't a substitute for profiling, but
+many performance problems are visible in the code itself.
+
+- **Hot-path allocations** — object creation inside tight loops, string
+  concatenation in loops (use builders/joins), creating regex objects on every
+  call instead of compiling once, allocating buffers that could be pooled or reused
+- **N+1 queries** — database access patterns where a loop issues one query per
+  item instead of batching. Also: ORM lazy-loading that triggers queries inside
+  templates or serializers.
+- **Unbounded growth** — caches without eviction, event listener lists that grow
+  without bound, log buffers that aren't flushed, in-memory stores with no size
+  limit
+- **Blocking the event loop** — synchronous I/O in async contexts, CPU-heavy
+  computation on the main thread, missing `await` on async calls that should be
+  awaited
+- **Unnecessary work** — recomputing values that could be cached, re-reading
+  files on every request, re-parsing config on every call, redundant database
+  queries for data already in memory
+
+The report should focus on patterns that cause real problems under load, not
+micro-optimizations. Flag the likely impact (latency, memory, throughput) for
+each finding.
+
+## Bug pattern audit
+
+Spawn a sub-agent to scan the codebase for known bug patterns — recurring shapes
+that cause defects across many projects. These patterns are language-agnostic
+and often survive code review because each instance looks reasonable in isolation.
+
+- **Shallow merge/copy** — objects or maps merged with spread or `Object.assign`
+  where nested structures need deep merging. The first level looks correct but
+  nested fields get shared references. Common in state management, config merging,
+  and option defaults.
+- **Serialization boundary mismatch** — data that crosses a serialization boundary
+  (JSON, database, IPC, network) but the two sides disagree on the schema. Field
+  renames on one side but not the other, enum values that don't round-trip, dates
+  stored as strings with ambiguous formats.
+- **Silent data loss** — operations that can fail but whose failure is silently
+  ignored. `catch {}` blocks with no body, write operations with no error check,
+  event handlers that mutate local state but don't propagate the change upstream.
+- **Off-by-one in boundaries** — fence-post errors in pagination, range
+  calculations, array slicing, date range queries (inclusive vs exclusive
+  endpoints), and loop bounds.
+- **Stale closures** — callbacks or event handlers that capture a variable by
+  reference but the variable changes before the callback runs. Common in React
+  `useEffect` dependencies, Go goroutines over loop variables, and setTimeout
+  callbacks.
+- **Type coercion surprises** — implicit conversions that produce unexpected
+  results: `"5" + 3` in JavaScript, falsy-value checks that catch `0` and `""`
+  along with `null`, integer overflow in languages without checked arithmetic.
+
+For each pattern found, show the specific code and explain what would go wrong.
+Group findings by pattern type so recurring themes are visible.
+
+## Design philosophy compliance audit
+
+Spawn a sub-agent to evaluate the project against its own stated design
+principles. Look for a design philosophy in CLAUDE.md, README, CONTRIBUTING,
+design docs, or architecture decision records (ADRs). If the project has no
+stated principles, skip this audit and say so.
+
+- **Extract principles** — read the project's own docs and identify the stated
+  values, constraints, or design goals. These might be explicit ("we prefer
+  composition over inheritance") or implicit in the architecture.
+- **Evaluate compliance** — for each principle, scan the codebase for violations.
+  Does the code follow its own rules? Are there areas where the principle was
+  abandoned under pressure?
+- **Consistency** — do the stated principles contradict each other? Does the
+  README say one thing while CLAUDE.md says another?
+
+The report should list each principle, show examples of compliance and violation,
+and give an overall compliance score. This isn't about imposing external standards
+— it's about holding the project accountable to the standards it set for itself.
 
 ## Security vulnerability audit
 
