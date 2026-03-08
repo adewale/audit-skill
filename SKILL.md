@@ -1,24 +1,33 @@
 ---
 name: audit
 description: >
-  Systematic pre-push branch audit with an 8-category security and quality checklist
-  (secrets, unintended changes, debug artifacts, test coverage, build validation,
-  commit hygiene, integration checks, merge conflicts) that produces a structured
-  report with Clean/Minor/Blocking verdicts. ALWAYS use this skill when the user wants
-  to review their branch before pushing, check what they're about to push, audit their
-  changes, do a pre-push check, sanity-check before a PR, look over their diff, or
-  verify their branch is ready to merge. This includes any request to review local
-  branch changes for issues, sweep a branch for problems, or get a final check before
-  code leaves the machine — even if the user doesn't use the word "audit" explicitly.
+  Systematic audit toolkit for code, docs, security, and UI. Includes a pre-push
+  branch audit (8-category checklist with Clean/Minor/Blocking verdicts) plus four
+  deep-dive audits: code quality (duplication, inconsistency, simplification),
+  documentation brittleness, security vulnerability analysis, and UI design review
+  using CRAP principles. ALWAYS use this skill when the user wants to audit, review
+  before pushing, check their branch, sanity-check before a PR, look for duplication
+  or dead code, review docs for staleness, analyse security vulnerabilities, review
+  UI design, or apply design principles — even if they don't say "audit" explicitly.
 ---
 
 # Audit
 
-A manual, on-demand review of all changes on the current branch before they leave
-your machine. This is not an incremental check — it's a holistic sweep of the entire
-branch delta, the kind of review you'd do yourself before opening a PR.
+This skill provides two modes:
+
+1. **Branch audit** (default) — a pre-push review of the branch diff, checking 8
+   categories and producing a Clean/Minor/Blocking verdict.
+2. **Deep-dive audits** — project-wide analyses that use sub-agents to examine
+   code quality, documentation brittleness, security, or UI design in depth.
+
+If the user says "audit" without further context and there's a branch with changes,
+run the branch audit. If they ask for something specific (e.g., "audit for security
+vulnerabilities", "check our docs", "review the UI"), run the relevant deep-dive.
+They can also request multiple audits at once.
 
 ---
+
+# Branch Audit
 
 ## Step 1: Gather context
 
@@ -109,3 +118,92 @@ missing tests are Blocking. TODO/FIXME comments, commit hygiene, and minor
 integration issues are typically Minor.
 
 If the user asks you to fix any findings, fix them. Otherwise, just report.
+
+---
+
+# Deep-Dive Audits
+
+Each deep-dive audit should be delegated to a sub-agent so it can explore the
+codebase thoroughly without bloating the main conversation. Launch them in parallel
+when multiple are requested. Each sub-agent should produce a written report saved
+to a file, then summarize the key findings back to the user.
+
+## Code quality audit
+
+Spawn a sub-agent to audit the project for:
+
+- **Duplication** — repeated logic, copy-pasted code blocks, near-identical
+  functions or components that could be consolidated
+- **Internal inconsistency** — naming conventions that vary across files, mixed
+  patterns (e.g., callbacks in some places, promises in others), conflicting
+  approaches to the same problem
+- **Simplification and subtraction** — dead code, unused exports, over-abstracted
+  layers that add indirection without value, features or config that nobody uses.
+  The goal is to identify things that can be removed or simplified. Less code is
+  better code — every line is a liability.
+
+The report should group findings by theme (not by file) and suggest concrete actions.
+
+## Documentation brittleness audit
+
+Spawn a sub-agent to audit documentation (READMEs, doc comments, guides, wikis,
+SKILL.md files, onboarding docs) for:
+
+- **Fragile references** — line numbers, specific function signatures, or exact
+  file paths that will break when code changes. Prefer linking to symbols, sections,
+  or concepts instead.
+- **Over-specified details** — documentation that mirrors the code so closely that
+  any refactor makes the docs wrong. Good docs explain *why* and *how to use*,
+  not *what each line does*.
+- **Staleness risk** — instructions that reference specific versions, temporary
+  workarounds, or "current" states that will age poorly. Flag anything that reads
+  like it was written for a moment in time rather than for the long term.
+
+The report should recommend specific rewrites, not just flag problems.
+
+## Security vulnerability audit
+
+Spawn a sub-agent to step back from the current task and analyse the codebase for
+security vulnerabilities. This is not the quick secrets-in-diff check from the
+branch audit — it's a deeper review of the project's security posture:
+
+- **Injection** — SQL injection, command injection, XSS, template injection.
+  Trace user input from entry points through to database queries, shell commands,
+  and rendered output.
+- **Authentication and authorization** — missing auth checks on sensitive endpoints,
+  insecure session handling, hardcoded credentials, weak password policies
+- **Data exposure** — sensitive data in logs, error messages that leak internals,
+  overly permissive API responses, missing field-level access control
+- **Dependency risks** — known vulnerable packages, outdated dependencies with
+  published CVEs, unnecessary dependencies that increase attack surface
+- **Configuration** — debug mode enabled in production config, permissive CORS,
+  missing security headers, insecure defaults
+
+The report should rate each finding by severity (Critical/High/Medium/Low) with
+the affected file and a recommended fix.
+
+## UI design audit (CRAP principles)
+
+Spawn a sub-agent to review the project's UI using Robin Williams' four
+fundamental design principles — **Contrast, Repetition, Alignment, and Proximity**
+(CRAP). This applies to web interfaces, CLI output, terminal UIs, documentation
+layouts, or any visual/textual output the project produces.
+
+- **Contrast** — Are different elements visually distinct? Do headings stand out
+  from body text? Are interactive elements (buttons, links) clearly differentiated
+  from static content? Is there enough contrast between foreground and background?
+  Weak contrast makes interfaces feel flat and hard to scan.
+- **Repetition** — Is there a consistent visual language? Are colors, fonts, spacing,
+  and component styles reused consistently throughout? Repetition creates unity — if
+  every page/screen uses different styling, the interface feels disjointed.
+- **Alignment** — Is every element visually connected to something else on the page?
+  Nothing should be placed arbitrarily. Check for elements that are "almost but not
+  quite" aligned — these are worse than clearly different placements because they
+  look like mistakes.
+- **Proximity** — Are related items grouped together? Are unrelated items separated?
+  Physical closeness implies relationship. Check for cases where labels are far from
+  their fields, or where unrelated controls are clustered together.
+
+The report should include specific examples with file paths and, where possible,
+screenshots or descriptions of the visual issues. Suggest concrete improvements
+for each finding.
