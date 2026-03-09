@@ -1,5 +1,2 @@
-# Eval workspace (test repos, benchmark results, scratch data)
-audit-workspace/
-
 # Local Claude Code settings
 .claude/settings.local.json
