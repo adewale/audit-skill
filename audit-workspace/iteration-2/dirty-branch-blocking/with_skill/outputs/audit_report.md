@@ -19,7 +19,7 @@
 
 | # | File | Line | Issue |
 |---|------|------|-------|
-| 1 | `src/payments.py` | 3 | **Hard-coded Stripe live secret key** `sk_live_4eC39HqLyjWDarjtT1zdp7dc` is committed directly in source code. This is a production key (indicated by `sk_live_` prefix) and must be rotated immediately and moved to an environment variable or secrets manager. |
+| 1 | `src/payments.py` | 3 | **Hard-coded Stripe live secret key** `sk_live_REDACTED_TEST_KEY` is committed directly in source code. This is a production key (indicated by `sk_live_` prefix) and must be rotated immediately and moved to an environment variable or secrets manager. |
 
 ### Debug Artifacts
 

@@ -15,7 +15,7 @@ No findings. All changes are related to the payment processing feature.
 
 1. **Hard-coded live Stripe secret key** — `src/payments.py`, line 3
    ```
-   STRIPE_SECRET_KEY = "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+   STRIPE_SECRET_KEY = "sk_live_REDACTED_TEST_KEY"
    ```
    A live Stripe secret key (`sk_live_...`) is committed directly into source code. This is a critical security issue. The key grants full API access to the Stripe account and will be visible in version control history. It must be removed from the code, rotated immediately in the Stripe dashboard, and loaded from an environment variable or secrets manager instead.
 

@@ -38,7 +38,7 @@ The following files were added or modified on this branch:
 **File:** `src/payments.py`, line 3
 
 ```python
-STRIPE_SECRET_KEY = "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+STRIPE_SECRET_KEY = "sk_live_REDACTED_TEST_KEY"
 ```
 
 A **live Stripe secret key** is hardcoded directly in the source code. This is a severe security vulnerability:

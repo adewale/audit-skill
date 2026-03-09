@@ -47,7 +47,7 @@ A new `POST /payments` endpoint was added, which accepts JSON with `amount`, `cu
 #### 1. Hardcoded Secret API Key (Security -- Severity: CRITICAL)
 **File:** `src/payments.py`, line 3
 ```python
-STRIPE_SECRET_KEY = "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+STRIPE_SECRET_KEY = "sk_live_REDACTED_TEST_KEY"
 ```
 A **live Stripe secret key** is hardcoded directly in the source code. This is a severe security vulnerability:
 - The key will be stored in git history permanently once merged.
