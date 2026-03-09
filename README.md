@@ -1,6 +1,6 @@
 # Audit Skill for Claude Code
 
-A systematic audit toolkit for code, docs, security, and UI. Catches issues before you push.
+A comprehensive audit toolkit with 14 audit types. Catches issues before you push, and goes deep when you need it.
 
 ## What it does
 
@@ -15,47 +15,66 @@ A systematic audit toolkit for code, docs, security, and UI. Catches issues befo
 - Integration check
 - Merge conflicts and rebase state
 
-**Deep-dive audits** — Project-wide analyses using sub-agents:
+**Deep-dive audits** — 13 project-wide analyses using sub-agents:
 
 - **Code quality** — duplication, inconsistency, simplification opportunities
 - **Documentation brittleness** — fragile references, over-specified details, staleness risk
 - **Documentation-code sync** — docs that have already drifted from the code
 - **Language best practices** — idiomatic patterns for Python, JS/TS, Go, Rust, Java, Ruby, Shell
+- **Concurrency** — shared mutable state, race conditions, deadlock risk, thread/goroutine leaks
+- **Resource management** — file handle leaks, unclosed connections, zombie processes, temp files
+- **Test quality** — weak assertions, flaky patterns, test isolation, missing negative tests
+- **Feature completeness** — documented features vs actual implementation, missing endpoints
+- **Performance** — N+1 queries, unbounded caches, hot-path allocations, blocking I/O
+- **Bug patterns** — shallow merges, serialization mismatches, silent data loss, stale closures
+- **Design philosophy compliance** — evaluate code against the project's own stated principles
 - **Security vulnerabilities** — injection, auth, data exposure, dependency risks, config
 - **UI design** — review using CRAP principles (Contrast, Repetition, Alignment, Proximity)
 
 ## Installation
 
+### Via Claude Code plugin marketplace
+
+```
+/plugin marketplace add adewale/audit-skill
+/plugin install audit@adewale-audit
+```
+
+### Via skills.sh
+
+```bash
+npx skills add adewale/audit-skill
+```
+
+### Manual
+
 Copy `SKILL.md` into your project's `.claude/skills/` directory:
 
 ```bash
 mkdir -p .claude/skills/audit
-cp SKILL.md .claude/skills/audit/SKILL.md
-```
-
-Or clone this repo and symlink:
-
-```bash
-git clone https://github.com/adewale/audit-skill.git
-ln -s "$(pwd)/audit-skill/SKILL.md" your-project/.claude/skills/audit/SKILL.md
+curl -o .claude/skills/audit/SKILL.md https://raw.githubusercontent.com/adewale/audit-skill/main/SKILL.md
 ```
 
 ## Usage
 
-The skill triggers automatically when you ask Claude Code to audit or review your work:
+Invoke with `/audit` or ask Claude Code directly:
 
 ```
+> /audit
 > audit
 > review my changes before I push
 > check what I'm about to push
-> audit for security vulnerabilities
+> run a concurrency audit
+> audit test quality
+> do a security audit
+> check for performance issues
+> are our docs up to date with the code?
 > review the UI design
-> check our docs are up to date
 ```
 
 ## Example output
 
-### Blocking verdict
+### Branch audit — Blocking verdict
 
 ```
 ## Summary
@@ -69,7 +88,7 @@ The skill triggers automatically when you ask Claude Code to audit or review you
 Verdict: **Blocking** — issues that should be fixed before pushing.
 ```
 
-### Clean verdict
+### Branch audit — Clean verdict
 
 ```
 Verdict: **Clean** — no findings, safe to push.
@@ -77,14 +96,23 @@ Verdict: **Clean** — no findings, safe to push.
 
 ## Eval results
 
-Tested across 3 scenarios (dirty branch, clean branch, mixed branch) with and without the skill:
+Tested across 6 scenarios with and without the skill:
+
+**Branch audits** (3 scenarios: dirty/clean/mixed branches):
 
 | Configuration  | Pass rate | Avg time | Avg tokens |
 |----------------|-----------|----------|------------|
-| With skill     | 100%      | 100s     | 18,855     |
-| Without skill  | 62%       | 94s      | 18,057     |
+| With skill     | 93%       | 112s     | 21,619     |
+| Without skill  | 73%       | 94s      | 17,717     |
 
-The skill's value is consistent structured output — Clean/Minor/Blocking verdicts, category-based reporting, and catching unrelated changes. Detection of issues like leaked keys and debug statements is similar either way since Claude is already good at finding problems. The skill ensures they're reported in a reliable, actionable format.
+**Deep-dive audits** (3 scenarios: concurrency/test quality/performance):
+
+| Configuration  | Pass rate | Avg time | Avg tokens |
+|----------------|-----------|----------|------------|
+| With skill     | 100%      | 131s     | 31,383     |
+| Without skill  | 100%      | 133s     | 24,219     |
+
+The skill's primary value is consistent structured output — Clean/Minor/Blocking verdicts, systematic checklists, and organized report formats. Detection of issues is similar either way since Claude is already good at finding problems. The skill ensures they're reported in a reliable, repeatable format.
 
 ## License
 
