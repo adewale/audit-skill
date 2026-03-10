@@ -60,6 +60,11 @@ Check this first — it's the most critical category.
 - `.env` files or equivalents staged for commit
 - Hard-coded URLs pointing to internal/staging environments
 
+When reporting secrets findings, never include the actual secret value in your
+output. Redact credentials to show only enough to identify the location — e.g.,
+"API key `sk_live_...7dc` found at src/config.py:42". The whole point of flagging
+secrets is to prevent exposure; echoing them in the report would defeat that purpose.
+
 ### Unintended changes
 
 - Files modified that don't relate to the branch's purpose (infer the purpose from
@@ -405,7 +410,10 @@ branch audit — it's a deeper review of the project's security posture:
 - **Authentication and authorization** — missing auth checks on sensitive endpoints,
   insecure session handling, hardcoded credentials, weak password policies
 - **Data exposure** — sensitive data in logs, error messages that leak internals,
-  overly permissive API responses, missing field-level access control
+  overly permissive API responses, missing field-level access control.
+  When reporting findings in this category, redact any actual secret values —
+  show the file, line, and type of secret but never echo credentials, tokens,
+  or keys verbatim in the report.
 - **Dependency risks** — known vulnerable packages, outdated dependencies with
   published CVEs, unnecessary dependencies that increase attack surface
 - **Configuration** — debug mode enabled in production config, permissive CORS,
