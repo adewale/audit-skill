@@ -1,5 +1,7 @@
 # Audit Skill for Claude Code
 
+[![skills.sh](https://skills.sh/b/adewale/audit-skill)](https://skills.sh/adewale/audit-skill)
+
 A comprehensive audit toolkit with 14 audit types. Catches issues before you push, and goes deep when you need it.
 
 ## What it does
@@ -45,6 +47,8 @@ A comprehensive audit toolkit with 14 audit types. Catches issues before you pus
 ```bash
 npx skills add adewale/audit-skill
 ```
+
+Skills appear on skills.sh automatically after users install the repo with the skills CLI. Install counts and leaderboard rankings come from anonymous CLI telemetry; opt out with `DISABLE_TELEMETRY=1`. The repo page customization in `skills.sh.json` is picked up after the repository is seen by telemetry and the cache refreshes.
 
 ### Manual
 
