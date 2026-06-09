@@ -1,0 +1,966 @@
+{
+  "version": 1,
+  "skill_name": "audit-skill",
+  "skill_paths": [
+    "SKILL.md",
+    "skills/audit/SKILL.md"
+  ],
+  "old_skill_paths": [],
+  "variants": [
+    "with_skill",
+    "without_skill"
+  ],
+  "optional_variants": [
+    "old_skill"
+  ],
+  "split_policy": {
+    "tune": "Visible cases used during iteration. Failures may drive skill/reference edits.",
+    "holdout": "Hidden cases scored only at end-of-round or merge. Prefer prompt_ref files outside committed docs/examples.",
+    "holdback": "Examples not shown in SKILL.md, references, docs, or eval descriptions until after the scored run; used to detect memorization/overfitting."
+  },
+  "run_protocol": {
+    "paired": "Run with_skill and without_skill in the same round; optionally run old_skill from a pinned artifact/branch.",
+    "outputs": "Save outputs as runs/<case_id>/<variant>/output.md and metadata as runs/<case_id>/<variant>/metadata.json.",
+    "metadata": [
+      "elapsed_ms",
+      "input_tokens",
+      "output_tokens",
+      "total_tokens",
+      "model"
+    ],
+    "analyst_pass": "After benchmark, review saturated, flaky, non-discriminating, and with-skill-failed cases before editing the skill."
+  },
+  "notes": "",
+  "cases": [
+    {
+      "id": "pos-leaked-redacted-secret",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Run a pre-push audit on this diff: a file contains `sk_live_...REDACTED` and a test fixture contains `sk_test_fake`. Identify what is real risk versus fixture.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-leaked-redacted-secret",
+          "type": "contains_any",
+          "values": [
+            "secret",
+            "redact",
+            "fixture"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-unrelated-file-change",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Pre-push review: payments code changed, but README and a generated SVG also changed unexpectedly.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-unrelated-file-change",
+          "type": "contains_any",
+          "values": [
+            "unrelated",
+            "README",
+            "generated"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-skipped-test",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Audit this branch before push; one new pytest is marked @pytest.mark.skip with reason 'fix later'.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-skipped-test",
+          "type": "contains_any",
+          "values": [
+            "skip",
+            "pytest",
+            "Blocking",
+            "Minor"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-unregistered-route",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Feature completeness audit: a new handler exists but the route is not registered.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-unregistered-route",
+          "type": "contains_any",
+          "values": [
+            "route",
+            "registered",
+            "reachable"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-go-shared-map-race",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Concurrency audit this tiny Go service: goroutines update a shared map without locks.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-go-shared-map-race",
+          "type": "contains_any",
+          "values": [
+            "map",
+            "race",
+            "mutex",
+            "sync"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-python-unclosed-resource",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Resource management audit: Python code opens files and response bodies but never closes them.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-python-unclosed-resource",
+          "type": "contains_any",
+          "values": [
+            "unclosed",
+            "file",
+            "response",
+            "context manager"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-stale-readme-cli-flag",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Docs-code sync audit: README documents `--force` but the CLI now uses `--yes`.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-stale-readme-cli-flag",
+          "type": "contains_any",
+          "values": [
+            "--force",
+            "--yes",
+            "stale",
+            "docs"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-sql-injection-path",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Security audit this endpoint summary: `/search` builds SQL with an f-string using user-controlled `q` in a LIKE query; a nearby `/admin/stats` query already uses bind parameters. Report only evidence-backed findings.",
+      "expected_behavior": [
+        "Find the planted f-string SQL injection path, cite source-to-sink evidence, calibrate severity, recommend parameterization plus a verification test, and avoid flagging the safe parameterized decoy."
+      ],
+      "assertions": [
+        {
+          "name": "detect-sql-injection-path",
+          "type": "contains_all",
+          "values": [
+            "SQL injection",
+            "f-string",
+            "user-controlled"
+          ]
+        },
+        {
+          "name": "source-sink-evidence-contract",
+          "type": "contains_all",
+          "values": [
+            "Evidence",
+            "Source",
+            "Sink",
+            "Severity",
+            "Fix",
+            "Verify"
+          ]
+        },
+        {
+          "name": "parameterized-fix",
+          "type": "contains_any",
+          "values": [
+            "parameterized",
+            "prepared statement",
+            "bind parameter"
+          ]
+        },
+        {
+          "name": "avoid-safe-parameterized-decoy",
+          "type": "excludes_any",
+          "values": [
+            "admin stats is vulnerable",
+            "parameterized query is vulnerable",
+            "bind parameters are vulnerable"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Cite source-to-sink evidence",
+            "Avoid invented findings and safe-decoy false positives",
+            "Severity is calibrated",
+            "Actionable fix and verification test"
+          ]
+        }
+      ],
+      "tags": [
+        "baseline-smoke-discriminator"
+      ]
+    },
+    {
+      "id": "pos-n-plus-one-loop",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Performance audit: list endpoint fetches detail rows inside a loop for every item.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-n-plus-one-loop",
+          "type": "contains_any",
+          "values": [
+            "N+1",
+            "loop",
+            "batch"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-weak-test-suite",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Test quality audit: tests only assert toBeDefined/isinstance and print output.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-weak-test-suite",
+          "type": "contains_any",
+          "values": [
+            "weak",
+            "toBeDefined",
+            "assert",
+            "print"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-ui-alignment-proximity",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "UI design audit: cards have inconsistent alignment and unrelated controls are closer than related labels.",
+      "expected_behavior": [
+        "Find the planted issue and assign severity/verdict without inventing unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detect-ui-alignment-proximity",
+          "type": "contains_any",
+          "values": [
+            "alignment",
+            "proximity",
+            "CRAP"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "Minor",
+            "Blocking",
+            "Severity"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Find planted bug",
+            "Avoid invented findings",
+            "Actionable fix"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "neg-fake-secret-fixture",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "Audit this repo: test fixture intentionally includes `sk_test_fake_123` as a fake credential.",
+      "expected_behavior": [
+        "Avoid false positives and explicitly explain why the obvious-looking issue is not a finding."
+      ],
+      "assertions": [
+        {
+          "name": "avoid-fake-secret-fixture",
+          "type": "contains_any",
+          "values": [
+            "fake",
+            "fixture",
+            "not",
+            "no finding"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "neg-todo-quoted-docs",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "Audit branch: docs quote a TODO as an example anti-pattern; production code has none.",
+      "expected_behavior": [
+        "Avoid false positives and explicitly explain why the obvious-looking issue is not a finding."
+      ],
+      "assertions": [
+        {
+          "name": "avoid-todo-quoted-docs",
+          "type": "contains_any",
+          "values": [
+            "quoted",
+            "docs",
+            "not introduced"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "neg-lockfile-paired",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "Pre-push review: package.json dependency was upgraded and lockfile changed accordingly.",
+      "expected_behavior": [
+        "Avoid false positives and explicitly explain why the obvious-looking issue is not a finding."
+      ],
+      "assertions": [
+        {
+          "name": "avoid-lockfile-paired",
+          "type": "contains_any",
+          "values": [
+            "lockfile",
+            "paired",
+            "expected"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "neg-no-design-philosophy",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "Run a design philosophy audit on a repo that has no stated philosophy.",
+      "expected_behavior": [
+        "Avoid false positives and explicitly explain why the obvious-looking issue is not a finding."
+      ],
+      "assertions": [
+        {
+          "name": "avoid-no-design-philosophy",
+          "type": "contains_any",
+          "values": [
+            "no stated",
+            "cannot assess",
+            "ask",
+            "not enough"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "neg-toy-security-clean",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "Security audit a toy hello-world repo with no input, auth, network, or secrets.",
+      "expected_behavior": [
+        "Avoid false positives and explicitly explain why the obvious-looking issue is not a finding."
+      ],
+      "assertions": [
+        {
+          "name": "avoid-toy-security-clean",
+          "type": "contains_any",
+          "values": [
+            "Clean",
+            "no findings",
+            "do not invent"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "trig-pre-push",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: pre-push review my branch\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-resource-leaks",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: find resource leaks in this service\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-docs-code-sync",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: audit docs-code sync for CLI flags\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-changelog",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: write a changelog for this release\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return NO_TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*NO_TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-audit-logs",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: summarize these audit logs\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return NO_TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*NO_TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-security-explainer",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: explain what security audits are\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return NO_TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*NO_TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "holdout-real-pr-branch-diff-01",
+      "split": "holdout",
+      "kind": "audit-output",
+      "scenario": "Hidden branch diff from real PR archetype",
+      "prompt_ref": "holdout/real-pr-branch-diff-01.txt",
+      "expected_behavior": [
+        "Find planted known answers and avoid false positives."
+      ],
+      "assertions": [
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Detection",
+            "Severity calibration"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "holdback-language-fixture-race-01",
+      "split": "holdback",
+      "kind": "audit-output",
+      "scenario": "Private holdback case. Exact scenario and answer key live outside committed docs/eval descriptions.",
+      "prompt_ref": "holdback/language-fixture-race-01.txt",
+      "answer_ref": "holdback/answers/language-fixture-race-01.json",
+      "expected_behavior": [
+        "Private holdback scoring: load prompt and answer key only for the scored run, then reveal after scoring if desired."
+      ],
+      "assertions": [
+        {
+          "name": "private-holdback-review",
+          "type": "judge",
+          "rubric": [
+            "Use the private answer key; do not rely on public manifest wording."
+          ]
+        }
+      ],
+      "tags": [
+        "holdback-private"
+      ]
+    },
+    {
+      "id": "pos-audit-evidence-not-just-label",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Audit this snippet and report only real findings: `app.get(\"/admin\", (req,res)=> res.json(db.dumpAllUsers()))` is mounted before auth middleware; later code has `app.use(requireAuth)`. Return a severity/verdict, evidence, and smallest fix.",
+      "expected_behavior": [
+        "Find unauthenticated admin route before middleware.",
+        "Include severity/verdict, code evidence, and smallest fix without unrelated findings."
+      ],
+      "assertions": [
+        {
+          "name": "detects-auth-middleware-order",
+          "type": "contains_any",
+          "values": [
+            "before auth middleware",
+            "mounted before auth",
+            "unauthenticated",
+            "auth middleware"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Blocking",
+            "High",
+            "Severity",
+            "verdict"
+          ]
+        },
+        {
+          "name": "smallest-fix",
+          "type": "contains_any",
+          "values": [
+            "move",
+            "before the route",
+            "requireAuth",
+            "protect the route"
+          ]
+        },
+        {
+          "name": "round-2-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Evidence-backed finding",
+            "No invented findings",
+            "Actionable minimal fix"
+          ]
+        }
+      ],
+      "tags": [
+        "round-2",
+        "anthropic-gap",
+        "evidence"
+      ]
+    },
+    {
+      "id": "round3-fixture-auth-order",
+      "split": "tune",
+      "kind": "audit-output",
+      "files": [
+        "fixtures/round3-auth-order/src/server.ts",
+        "fixtures/round3-auth-order/package.json"
+      ],
+      "prompt": "Audit the attached tiny repo. Report only real findings with severity/verdict, evidence, and smallest fix.",
+      "expected_behavior": [
+        "Detect /admin/export mounted before requireAuth.",
+        "Cite file evidence and smallest route/middleware fix."
+      ],
+      "assertions": [
+        {
+          "name": "cites-route-file",
+          "type": "contains_all",
+          "values": [
+            "server.ts",
+            "/admin/export"
+          ]
+        },
+        {
+          "name": "detects-auth-order",
+          "type": "contains_any",
+          "values": [
+            "before requireAuth",
+            "before auth",
+            "unauthenticated",
+            "mounted before"
+          ]
+        },
+        {
+          "name": "has-severity-verdict",
+          "type": "contains_any",
+          "values": [
+            "Severity",
+            "Blocking",
+            "High",
+            "verdict"
+          ]
+        },
+        {
+          "name": "round-3-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Evidence-backed",
+            "No unrelated findings",
+            "Smallest fix"
+          ]
+        }
+      ],
+      "tags": [
+        "round-3",
+        "fixture-backed",
+        "audit-manifest"
+      ]
+    }
+  ],
+  "ablations": [
+    {
+      "id": "no-subagents",
+      "removed_component": "sub-agent delegation",
+      "expected_regressions": [
+        "Deep-dive coverage becomes shallow or misses audit-class-specific planted bugs."
+      ],
+      "applies_to_cases": []
+    },
+    {
+      "id": "no-secret-redaction",
+      "removed_component": "secret redaction policy",
+      "expected_regressions": [
+        "Leaks or mishandles sensitive-looking values."
+      ],
+      "applies_to_cases": []
+    },
+    {
+      "id": "no-omit-no-findings",
+      "removed_component": "omit no-findings sections",
+      "expected_regressions": [
+        "Reports noisy empty sections and obscures signal."
+      ],
+      "applies_to_cases": []
+    },
+    {
+      "id": "no-check-commands",
+      "removed_component": "try test/lint/typecheck step",
+      "expected_regressions": [
+        "Misses validation evidence and command failures."
+      ],
+      "applies_to_cases": []
+    },
+    {
+      "id": "no-severity-verdict",
+      "removed_component": "severity/verdict rules",
+      "expected_regressions": [
+        "Findings lose Clean/Minor/Blocking calibration."
+      ],
+      "applies_to_cases": []
+    }
+  ]
+}

@@ -1,2 +1,4 @@
 # Local Claude Code settings
 .claude/settings.local.json
+
+eval-runs/
