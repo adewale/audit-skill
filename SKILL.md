@@ -6,11 +6,14 @@ description: >
   audits run via sub-agents: code quality, documentation brittleness, docs-code sync,
   language best practices, concurrency, resource management, test quality, feature
   completeness, performance, bug patterns, design philosophy compliance, security
-  vulnerabilities, and UI design (CRAP principles). ALWAYS use this skill when the
-  user wants to audit, review before pushing, check their branch, look for
-  duplication or dead code, check docs, review test quality, find concurrency bugs,
-  check resource leaks, analyse security or performance, review UI design, verify
-  feature completeness, or check code against best practices or design principles.
+  vulnerabilities, and UI design (CRAP principles). Use this skill when the user
+  wants to inspect a concrete codebase, branch, diff, repository, service, or docs/source
+  pair: audit before pushing, check their branch, look for duplication or dead code,
+  check docs-code sync, review test quality, find concurrency bugs or resource leaks,
+  analyze concrete security/performance risks in code, review UI implementation, verify
+  feature completeness, or check code against best practices/design principles. Do not
+  use for conceptual explainers about audits, summarizing audit logs, changelog writing,
+  or general security education without code/repo evidence to inspect.
 ---
 
 # Audit
@@ -50,6 +53,18 @@ categories with nothing to report (don't include "No findings" sections).
 
 Each finding should appear once. If something could fit multiple categories, put it
 in the most relevant one and don't repeat it elsewhere.
+
+For every reported finding, require objective evidence from the inspected diff or
+repo. Evidence can be a file/line, symbol, command output, or a short redacted code
+snippet. Do not report a suspicion just because a filename, dependency, quoted text,
+or test fixture looks risky. First decide whether there is a concrete source,
+affected sink/path, and user or release impact.
+
+If an obvious-looking decoy is in scope and could be mistaken for a bug (fake test
+secret, quoted TODO in docs, lockfile paired with dependency change, safe
+parameterized query, toy repo with no attack surface), either omit it or briefly
+call it out under **Not findings** with the evidence that clears it. Do not assign
+severity to non-findings.
 
 ### Secrets and credentials
 
@@ -111,18 +126,41 @@ move on — don't spend time troubleshooting environment issues. Report what you
 - Unresolved conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`)
 - Stale branch: base branch has moved significantly since branch point
 
+## Evidence and severity rules
+
+Before assigning severity, separate **Confirmed findings**, **Suspected needs
+verification**, and **Not findings**:
+
+- Confirmed findings need concrete evidence, impact, and an actionable fix.
+- Suspected items may be mentioned only when the evidence is incomplete; say what
+  to inspect next and do not inflate them to Blocking.
+- Not findings are decoys cleared by evidence and should not be counted in the
+  verdict.
+
+Severity calibration for branch audits:
+
+- **Blocking** — likely unsafe to push/release: leaked credentials, unresolved
+  conflict markers, production debug artifacts, skipped/disabled tests or missing
+  tests for changed production behavior, reachable security vulnerabilities,
+  unregistered claimed features, likely data loss, or concurrency/resource bugs
+  with a plausible failure path.
+- **Minor** — low-risk cleanup or hygiene: TODO/FIXME comments, commit hygiene,
+  small docs-code drift, or integration issues without immediate user impact.
+- **Clean** — no confirmed actionable findings after checking the requested scope.
+
+For deep-dive security reports, use Critical/High/Medium/Low for each finding, but
+when summarizing a pre-push branch still map the overall verdict to
+Clean/Minor/Blocking. Always explain the severity with the evidence path, not just
+the category name.
+
 ## Step 3: Verdict
 
-End with a summary table of findings (file, line, issue, severity) and one of
-these verdicts:
+End with a summary table of confirmed findings (file, line, issue, severity) and
+one of these verdicts:
 
 - **Clean** — no findings, safe to push
 - **Minor** — cosmetic or low-risk issues found (list them), push at your discretion
 - **Blocking** — issues that should be fixed before pushing (list them)
-
-Secrets and unresolved conflict markers are always Blocking. Debug artifacts and
-missing tests are Blocking. TODO/FIXME comments, commit hygiene, and minor
-integration issues are typically Minor.
 
 If the user asks you to fix any findings, fix them. Otherwise, just report.
 
@@ -405,8 +443,11 @@ security vulnerabilities. This is not the quick secrets-in-diff check from the
 branch audit — it's a deeper review of the project's security posture:
 
 - **Injection** — SQL injection, command injection, XSS, template injection.
-  Trace user input from entry points through to database queries, shell commands,
-  and rendered output.
+  Trace a concrete source → construction → sink path before calling it a
+  vulnerability: where user-controlled input enters, how it is interpolated or
+  escaped, and which database query, shell command, template, or renderer consumes
+  it. Parameterized queries, bind variables, and safe ORM calls are not findings
+  unless the evidence shows unsafe dynamic SQL or identifiers.
 - **Authentication and authorization** — missing auth checks on sensitive endpoints,
   insecure session handling, hardcoded credentials, weak password policies
 - **Data exposure** — sensitive data in logs, error messages that leak internals,
@@ -420,7 +461,10 @@ branch audit — it's a deeper review of the project's security posture:
   missing security headers, insecure defaults
 
 The report should rate each finding by severity (Critical/High/Medium/Low) with
-the affected file and a recommended fix.
+the affected file and a recommended fix. For each confirmed positive, include
+Evidence, Attack path/source→sink, Impact, Fix, and Verify/test. If the source,
+sink, or exploitability is not evidenced, mark it suspected or not a finding rather
+than inventing unrelated vulnerabilities.
 
 ## UI design audit (CRAP principles)
 
