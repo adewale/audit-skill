@@ -75,7 +75,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-unrelated-file-change",
@@ -115,7 +120,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-skipped-test",
@@ -156,7 +166,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-unregistered-route",
@@ -196,7 +211,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-go-shared-map-race",
@@ -237,7 +257,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-python-unclosed-resource",
@@ -278,7 +303,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-stale-readme-cli-flag",
@@ -319,7 +349,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-sql-injection-path",
@@ -382,6 +417,11 @@
       ],
       "tags": [
         "baseline-smoke-discriminator"
+      ],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
       ]
     },
     {
@@ -422,7 +462,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-weak-test-suite",
@@ -463,7 +508,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "pos-ui-alignment-proximity",
@@ -503,7 +553,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-fake-secret-fixture",
@@ -532,7 +587,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-todo-quoted-docs",
@@ -560,7 +620,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-lockfile-paired",
@@ -588,7 +653,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-no-design-philosophy",
@@ -617,7 +687,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "neg-toy-security-clean",
@@ -645,7 +720,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "trig-pre-push",
@@ -665,7 +745,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "implicit"
     },
     {
       "id": "trig-resource-leaks",
@@ -685,7 +771,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "implicit"
     },
     {
       "id": "trig-docs-code-sync",
@@ -705,7 +797,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "implicit"
     },
     {
       "id": "trig-changelog",
@@ -725,7 +823,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "negative-near-miss"
     },
     {
       "id": "trig-audit-logs",
@@ -745,7 +849,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "negative-near-miss"
     },
     {
       "id": "trig-security-explainer",
@@ -765,7 +875,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "code-audit",
+      "difficulty": "extended",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "negative-near-miss"
     },
     {
       "id": "holdout-real-pr-branch-diff-01",
@@ -786,7 +902,12 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "code-audit",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
+      ]
     },
     {
       "id": "holdback-language-fixture-race-01",
@@ -809,6 +930,11 @@
       ],
       "tags": [
         "holdback-private"
+      ],
+      "domain": "code-audit",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
       ]
     },
     {
@@ -865,6 +991,11 @@
         "round-2",
         "anthropic-gap",
         "evidence"
+      ],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
       ]
     },
     {
@@ -926,6 +1057,11 @@
         "round-3",
         "fixture-backed",
         "audit-manifest"
+      ],
+      "domain": "code-audit",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome"
       ]
     }
   ],
