@@ -14,6 +14,7 @@ description: >
   feature completeness, or check code against best practices/design principles. Do not
   use for conceptual explainers about audits, summarizing audit logs, changelog writing,
   or general security education without code/repo evidence to inspect.
+compatibility: Agent Skills clients including Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
 ---
 
 # Audit

@@ -1,8 +1,8 @@
-# Audit Skill for Claude Code
+# Audit Skill
 
 [![skills.sh](https://skills.sh/b/adewale/audit-skill)](https://skills.sh/adewale/audit-skill)
 
-A comprehensive audit toolkit with 14 audit types. Catches issues before you push, and goes deep when you need it.
+Audit Skill is an Agent Skill with 14 audit types. Catches issues before you push, and goes deep when you need it.
 
 ## What it does
 
@@ -50,18 +50,32 @@ npx skills add adewale/audit-skill
 
 Skills appear on skills.sh automatically after users install the repo with the skills CLI. Install counts and leaderboard rankings come from anonymous CLI telemetry; opt out with `DISABLE_TELEMETRY=1`. The repo page customization in `skills.sh.json` is picked up after the repository is seen by telemetry and the cache refreshes.
 
+## Agent compatibility
+
+The installable skill directory is `skills/audit`. It uses the Agent Skills `SKILL.md` format and is configured for Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
+
+| Agent/client | Install or use |
+|---|---|
+| Codex | `cp -R skills/audit ~/.codex/skills/audit` |
+| OpenCode | `cp -R skills/audit ~/.config/opencode/skills/audit` or use `.opencode/skills/audit` in a project |
+| Pi | `pi install https://github.com/adewale/audit-skill` or `pi --skill skills/audit` |
+| Gemini CLI | `gemini skills install https://github.com/adewale/audit-skill --path skills/audit` or copy to `.gemini/skills/audit` |
+| Claude Code | `npx skills add adewale/audit-skill` or copy to `.claude/skills/audit` |
+
 ### Manual
 
-Copy `SKILL.md` into your project's `.claude/skills/` directory:
+Copy the canonical skill directory into your agent's skills directory:
 
 ```bash
-mkdir -p .claude/skills/audit
-curl -o .claude/skills/audit/SKILL.md https://raw.githubusercontent.com/adewale/audit-skill/main/SKILL.md
+gh repo clone adewale/audit-skill
+cp -R audit-skill/skills/audit ~/.claude/skills/audit
+cp -R audit-skill/skills/audit ~/.codex/skills/audit
+cp -R audit-skill/skills/audit ~/.config/opencode/skills/audit
 ```
 
 ## Usage
 
-Invoke with `/audit` or ask Claude Code directly:
+Invoke with `/audit` where slash commands are available, or ask your agent directly:
 
 ```
 > /audit
