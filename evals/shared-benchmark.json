@@ -7,7 +7,6 @@
     "version": ">=0.4.0"
   },
   "skill_paths": [
-    "SKILL.md",
     "skills/audit/SKILL.md"
   ],
   "old_skill_paths": [],
