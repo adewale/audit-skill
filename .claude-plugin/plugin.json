@@ -1,7 +1,7 @@
 {
   "name": "audit",
-  "version": "1.0.1",
-  "description": "Comprehensive audit toolkit with 14 audit types — branch audits with Clean/Minor/Blocking verdicts plus 13 deep-dive audits via sub-agents",
+  "version": "1.0.2",
+  "description": "Comprehensive audit toolkit with 14 audit types \u2014 branch audits with Clean/Minor/Blocking verdicts plus 13 deep-dive audits via sub-agents",
   "author": {
     "name": "Adewale Oshineye"
   },

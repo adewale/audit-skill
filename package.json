@@ -1,6 +1,6 @@
 {
   "name": "audit-skill",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "license": "MIT",
   "description": "Agent Skill audit toolkit with branch checks and deep-dive audits for code, docs, tests, security, performance, and UI.",
@@ -31,5 +31,13 @@
     "skills": [
       "./skills"
     ]
-  }
+  },
+  "files": [
+    "skills/audit/SKILL.md",
+    ".claude-plugin",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "skills.sh.json"
+  ]
 }

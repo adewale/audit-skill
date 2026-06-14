@@ -2,6 +2,14 @@
 
 All notable changes to Audit Skill are documented in this file.
 
+## [1.0.2] - 2026-06-13
+
+### Changed
+
+- Removed the duplicate root `SKILL.md`; `skills/audit/SKILL.md` is now the only installable skill entrypoint.
+- Updated package and Claude plugin metadata to point at the narrow `./skills/audit` skill directory.
+- Added a package `files` allowlist so eval workspaces, run artifacts, and repo-only files are not included in install bundles.
+
 ## [1.0.0] - 2026-03-09
 
 ### Added
@@ -34,4 +42,5 @@ All notable changes to Audit Skill are documented in this file.
 - Eval workspace with 3 iterations of benchmark data (93-100% pass rates)
 - MIT license
 
+[1.0.2]: https://github.com/adewale/audit-skill/releases/tag/v1.0.2
 [1.0.0]: https://github.com/adewale/audit-skill/releases/tag/v1.0.0
