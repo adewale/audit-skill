@@ -49,10 +49,9 @@
           "name": "detect-leaked-redacted-secret",
           "type": "contains_any",
           "values": [
-            "secret",
-            "redact",
-            "fixture"
-          ]
+            "secret"
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
@@ -94,10 +93,9 @@
           "name": "detect-unrelated-file-change",
           "type": "contains_any",
           "values": [
-            "unrelated",
-            "README",
-            "generated"
-          ]
+            "unrelated"
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
@@ -139,11 +137,10 @@
           "name": "detect-skipped-test",
           "type": "contains_any",
           "values": [
-            "skip",
-            "pytest",
             "Blocking",
             "Minor"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
@@ -185,10 +182,9 @@
           "name": "detect-unregistered-route",
           "type": "contains_any",
           "values": [
-            "route",
-            "registered",
             "reachable"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
@@ -230,11 +226,11 @@
           "name": "detect-go-shared-map-race",
           "type": "contains_any",
           "values": [
-            "map",
             "race",
             "mutex",
             "sync"
-          ]
+          ],
+          "description": "Removed short prompt-echo token."
         },
         {
           "name": "has-severity-verdict",
@@ -277,10 +273,9 @@
           "type": "contains_any",
           "values": [
             "unclosed",
-            "file",
-            "response",
             "context manager"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
@@ -322,11 +317,9 @@
           "name": "detect-stale-readme-cli-flag",
           "type": "contains_any",
           "values": [
-            "--force",
-            "--yes",
-            "stale",
-            "docs"
-          ]
+            "stale"
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
@@ -368,31 +361,30 @@
           "name": "detect-sql-injection-path",
           "type": "contains_all",
           "values": [
-            "SQL injection",
-            "f-string",
-            "user-controlled"
-          ]
+            "SQL injection"
+          ],
+          "description": "Prompt-echoed values replaced with non-prompt alternatives. Prompt-echoed values replaced with non-prompt alternatives."
         },
         {
           "name": "source-sink-evidence-contract",
           "type": "contains_all",
           "values": [
-            "Evidence",
             "Source",
             "Sink",
             "Severity",
             "Fix",
             "Verify"
-          ]
+          ],
+          "description": "Prompt-echoed values replaced with non-prompt alternatives. Prompt-echoed values replaced with non-prompt alternatives."
         },
         {
           "name": "parameterized-fix",
           "type": "contains_any",
           "values": [
             "parameterized",
-            "prepared statement",
-            "bind parameter"
-          ]
+            "prepared statement"
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "avoid-safe-parameterized-decoy",
@@ -437,9 +429,9 @@
           "type": "contains_any",
           "values": [
             "N+1",
-            "loop",
             "batch"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
@@ -481,11 +473,9 @@
           "name": "detect-weak-test-suite",
           "type": "contains_any",
           "values": [
-            "weak",
-            "toBeDefined",
-            "assert",
-            "print"
-          ]
+            "weak"
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
@@ -527,10 +517,10 @@
           "name": "detect-ui-alignment-proximity",
           "type": "contains_any",
           "values": [
-            "alignment",
             "proximity",
             "CRAP"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
@@ -572,11 +562,10 @@
           "name": "avoid-fake-secret-fixture",
           "type": "contains_any",
           "values": [
-            "fake",
-            "fixture",
             "not",
             "no finding"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "qualitative-review",
@@ -607,9 +596,9 @@
           "type": "contains_any",
           "values": [
             "quoted",
-            "docs",
             "not introduced"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "qualitative-review",
@@ -639,10 +628,10 @@
           "name": "avoid-lockfile-paired",
           "type": "contains_any",
           "values": [
-            "lockfile",
             "paired",
             "expected"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "qualitative-review",
@@ -672,11 +661,11 @@
           "name": "avoid-no-design-philosophy",
           "type": "contains_any",
           "values": [
-            "no stated",
             "cannot assess",
             "ask",
             "not enough"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "qualitative-review",
@@ -896,8 +885,8 @@
           "name": "qualitative-review",
           "type": "judge",
           "rubric": [
-            "Detection",
-            "Severity calibration"
+            "Detection accuracy",
+            "Impact-level judgment"
           ]
         }
       ],
@@ -950,21 +939,18 @@
           "name": "detects-auth-middleware-order",
           "type": "contains_any",
           "values": [
-            "before auth middleware",
-            "mounted before auth",
-            "unauthenticated",
-            "auth middleware"
-          ]
+            "unauthenticated"
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "has-severity-verdict",
           "type": "contains_any",
           "values": [
             "Blocking",
-            "High",
-            "Severity",
-            "verdict"
-          ]
+            "High"
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "smallest-fix",
@@ -972,9 +958,9 @@
           "values": [
             "move",
             "before the route",
-            "requireAuth",
             "protect the route"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "round-2-qualitative-review",
@@ -1069,41 +1055,125 @@
       "id": "no-subagents",
       "removed_component": "sub-agent delegation",
       "expected_regressions": [
-        "Deep-dive coverage becomes shallow or misses audit-class-specific planted bugs."
+        {
+          "summary": "Deep-dive coverage gets shallower on audit-class-specific bugs.",
+          "cases": [
+            "pos-ui-alignment-proximity",
+            "pos-go-shared-map-race"
+          ],
+          "assertions": [
+            "detect-ui-alignment-proximity",
+            "detect-go-shared-map-race"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "mechanism": "section",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/audit/SKILL.md",
+        "heading": "# Deep-Dive Audits"
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     },
     {
       "id": "no-secret-redaction",
       "removed_component": "secret redaction policy",
       "expected_regressions": [
-        "Leaks or mishandles sensitive-looking values."
+        {
+          "summary": "Secret cases lose redaction/fixture discrimination.",
+          "cases": [
+            "pos-leaked-redacted-secret",
+            "neg-fake-secret-fixture"
+          ],
+          "assertions": [
+            "detect-leaked-redacted-secret",
+            "avoid-fake-secret-fixture"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "mechanism": "section",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/audit/SKILL.md",
+        "heading": "### Secrets and credentials"
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     },
     {
       "id": "no-omit-no-findings",
       "removed_component": "omit no-findings sections",
       "expected_regressions": [
-        "Reports noisy empty sections and obscures signal."
+        {
+          "summary": "Clean/decoy cases become noisy instead of explicitly clean.",
+          "cases": [
+            "neg-toy-security-clean",
+            "neg-lockfile-paired"
+          ],
+          "assertions": [
+            "avoid-toy-security-clean",
+            "avoid-lockfile-paired"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "mechanism": "section",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/audit/SKILL.md",
+        "heading": "## Step 2: Audit each category"
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     },
     {
       "id": "no-check-commands",
       "removed_component": "try test/lint/typecheck step",
       "expected_regressions": [
-        "Misses validation evidence and command failures."
+        {
+          "summary": "Validation/build evidence disappears from audit output.",
+          "cases": [
+            "pos-skipped-test",
+            "pos-weak-test-suite"
+          ],
+          "assertions": [
+            "detect-skipped-test",
+            "detect-weak-test-suite"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "mechanism": "section",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/audit/SKILL.md",
+        "heading": "### Build and suite"
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     },
     {
       "id": "no-severity-verdict",
       "removed_component": "severity/verdict rules",
       "expected_regressions": [
-        "Findings lose Clean/Minor/Blocking calibration."
+        {
+          "summary": "Findings lose calibrated severity/verdict output.",
+          "cases": [
+            "pos-audit-evidence-not-just-label",
+            "pos-skipped-test"
+          ],
+          "assertions": [
+            "has-severity-verdict"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "mechanism": "section",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/audit/SKILL.md",
+        "heading": "## Evidence and severity rules"
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     }
   ]
 }
