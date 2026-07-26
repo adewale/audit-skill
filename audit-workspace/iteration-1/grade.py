@@ -2,7 +2,6 @@
 """Grade audit reports against assertions."""
 import json
 import os
-import re
 
 BASE = "/Users/ade/Documents/projects/audit-skill/audit-workspace/iteration-1"
 

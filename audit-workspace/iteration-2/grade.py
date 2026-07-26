@@ -77,7 +77,7 @@ for eval_name, eval_data in evals.items():
             elif atype == "not_contains_any":
                 matches = [v for v in values if v in content]
                 passed = len(matches) == 0
-                evidence = f"Correctly absent" if passed else f"Incorrectly present: {', '.join(matches)}"
+                evidence = "Correctly absent" if passed else f"Incorrectly present: {', '.join(matches)}"
             elif atype == "custom_readme":
                 passed, evidence = check_readme_unrelated(content)
             elif atype == "custom_no_dup":
