@@ -4,7 +4,7 @@
   "harness": {
     "name": "skill-eval-harness",
     "url": "https://github.com/adewale/skill-eval-harness",
-    "version": ">=0.4.0"
+    "version": "==0.6.0"
   },
   "skill_paths": [
     "skills/audit/SKILL.md"
@@ -55,13 +55,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\bverdict\\b[\\s\\S]{0,40}?\\bBlocking\\b",
+          "description": "Pre-push verdict must be Blocking: SKILL.md calibration lists leaked credentials as Blocking."
+        },
+        {
+          "name": "no-wrong-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean|minor)\\b",
+          "description": "The overall verdict must not be Clean Or Minor."
         },
         {
           "name": "qualitative-review",
@@ -99,13 +101,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\bverdict\\b[\\s\\S]{0,40}?\\bMinor\\b",
+          "description": "Pre-push verdict must be Minor: unrelated/generated-file changes are hygiene, not in SKILL.md's Blocking list."
+        },
+        {
+          "name": "no-wrong-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean|blocking)\\b",
+          "description": "The overall verdict must not be Clean Or Blocking."
         },
         {
           "name": "qualitative-review",
@@ -144,13 +148,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\bverdict\\b[\\s\\S]{0,40}?\\bBlocking\\b",
+          "description": "Pre-push verdict must be Blocking: SKILL.md calibration lists skipped/disabled tests as Blocking."
+        },
+        {
+          "name": "no-wrong-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean|minor)\\b",
+          "description": "The overall verdict must not be Clean Or Minor."
         },
         {
           "name": "qualitative-review",
@@ -188,13 +194,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\b(?:verdict|severity)\\b[\\s\\S]{0,40}?\\b(?:blocking|critical|high)\\b|\\|\\s*\\**(?:blocking|critical|high)\\**\\s*\\|",
+          "description": "Severity must be Blocking/Critical/High: SKILL.md calibration lists unregistered claimed features as Blocking."
+        },
+        {
+          "name": "no-clean-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean)\\b",
+          "description": "A planted issue exists, so the overall verdict must not be Clean."
         },
         {
           "name": "qualitative-review",
@@ -234,13 +242,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\b(?:verdict|severity)\\b[\\s\\S]{0,40}?\\b(?:blocking|critical|high)\\b|\\|\\s*\\**(?:blocking|critical|high)\\**\\s*\\|",
+          "description": "Severity must be Blocking/Critical/High: SKILL.md calibration lists concurrency bugs with a plausible failure path as Blocking."
+        },
+        {
+          "name": "no-clean-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean)\\b",
+          "description": "A planted issue exists, so the overall verdict must not be Clean."
         },
         {
           "name": "qualitative-review",
@@ -279,13 +289,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\b(?:verdict|severity)\\b[\\s\\S]{0,40}?\\b(?:blocking|critical|high)\\b|\\|\\s*\\**(?:blocking|critical|high)\\**\\s*\\|",
+          "description": "Severity must be Blocking/Critical/High: SKILL.md calibration lists resource bugs with a plausible failure path as Blocking."
+        },
+        {
+          "name": "no-clean-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean)\\b",
+          "description": "A planted issue exists, so the overall verdict must not be Clean."
         },
         {
           "name": "qualitative-review",
@@ -323,13 +335,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\b(?:verdict|severity)\\b[\\s\\S]{0,40}?\\b(?:minor|medium|low)\\b|\\|\\s*\\**(?:minor|medium|low)\\**\\s*\\|",
+          "description": "Severity must be Minor/Medium/Low: SKILL.md calibration lists small docs-code drift as Minor."
+        },
+        {
+          "name": "no-clean-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean)\\b",
+          "description": "A planted issue exists, so the overall verdict must not be Clean."
         },
         {
           "name": "qualitative-review",
@@ -435,13 +449,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\b(?:verdict|severity)\\b[\\s\\S]{0,40}?\\b(?:blocking|minor|critical|high|medium|low)\\b|\\|\\s*\\**(?:blocking|minor|critical|high|medium|low)\\**\\s*\\|",
+          "description": "A planted issue exists, so the report must rate it (any non-Clean severity); SKILL.md gives no performance calibration."
+        },
+        {
+          "name": "no-clean-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean)\\b",
+          "description": "A planted issue exists, so the overall verdict must not be Clean."
         },
         {
           "name": "qualitative-review",
@@ -479,13 +495,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\b(?:verdict|severity)\\b[\\s\\S]{0,40}?\\b(?:blocking|minor|critical|high|medium|low)\\b|\\|\\s*\\**(?:blocking|minor|critical|high|medium|low)\\**\\s*\\|",
+          "description": "A planted issue exists, so the report must rate it (any non-Clean severity); SKILL.md gives no test-quality calibration."
+        },
+        {
+          "name": "no-clean-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean)\\b",
+          "description": "A planted issue exists, so the overall verdict must not be Clean."
         },
         {
           "name": "qualitative-review",
@@ -524,13 +542,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "Minor",
-            "Blocking",
-            "Severity"
-          ]
+          "type": "regex",
+          "pattern": "\\b(?:verdict|severity)\\b[\\s\\S]{0,40}?\\b(?:blocking|minor|critical|high|medium|low)\\b|\\|\\s*\\**(?:blocking|minor|critical|high|medium|low)\\**\\s*\\|",
+          "description": "A planted issue exists, so the report must rate it (any non-Clean severity); SKILL.md gives no UI calibration."
+        },
+        {
+          "name": "no-clean-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean)\\b",
+          "description": "A planted issue exists, so the overall verdict must not be Clean."
         },
         {
           "name": "qualitative-review",
@@ -739,7 +759,8 @@
       "success_goals": [
         "trigger"
       ],
-      "trigger_type": "implicit"
+      "trigger_type": "implicit",
+      "should_trigger": true
     },
     {
       "id": "trig-resource-leaks",
@@ -765,7 +786,8 @@
       "success_goals": [
         "trigger"
       ],
-      "trigger_type": "implicit"
+      "trigger_type": "implicit",
+      "should_trigger": true
     },
     {
       "id": "trig-docs-code-sync",
@@ -791,7 +813,8 @@
       "success_goals": [
         "trigger"
       ],
-      "trigger_type": "implicit"
+      "trigger_type": "implicit",
+      "should_trigger": true
     },
     {
       "id": "trig-changelog",
@@ -817,7 +840,8 @@
       "success_goals": [
         "trigger"
       ],
-      "trigger_type": "negative-near-miss"
+      "trigger_type": "negative-near-miss",
+      "should_trigger": false
     },
     {
       "id": "trig-audit-logs",
@@ -843,7 +867,8 @@
       "success_goals": [
         "trigger"
       ],
-      "trigger_type": "negative-near-miss"
+      "trigger_type": "negative-near-miss",
+      "should_trigger": false
     },
     {
       "id": "trig-security-explainer",
@@ -869,7 +894,8 @@
       "success_goals": [
         "trigger"
       ],
-      "trigger_type": "negative-near-miss"
+      "trigger_type": "negative-near-miss",
+      "should_trigger": false
     },
     {
       "id": "holdout-real-pr-branch-diff-01",
@@ -887,7 +913,8 @@
           "rubric": [
             "Detection accuracy",
             "Impact-level judgment"
-          ]
+          ],
+          "gate": true
         }
       ],
       "tags": [],
@@ -913,7 +940,8 @@
           "type": "judge",
           "rubric": [
             "Use the private answer key; do not rely on public manifest wording."
-          ]
+          ],
+          "gate": true
         }
       ],
       "tags": [
@@ -945,12 +973,15 @@
         },
         {
           "name": "has-severity-verdict",
-          "type": "contains_any",
-          "values": [
-            "Blocking",
-            "High"
-          ],
-          "description": "Prompt-echoed values removed by leakage cleanup."
+          "type": "regex",
+          "pattern": "\\b(?:verdict|severity)\\b[\\s\\S]{0,40}?\\b(?:blocking|critical|high)\\b|\\|\\s*\\**(?:blocking|critical|high)\\**\\s*\\|",
+          "description": "Severity must be Blocking/Critical/High for an unauthenticated admin route (reachable security vulnerability)."
+        },
+        {
+          "name": "no-clean-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean)\\b",
+          "description": "A planted issue exists, so the overall verdict must not be Clean."
         },
         {
           "name": "smallest-fix",

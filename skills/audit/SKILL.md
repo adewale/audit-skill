@@ -1,16 +1,16 @@
 ---
 name: audit
 description: >
-  Comprehensive audit toolkit with 14 audit types. Includes a pre-push branch
-  audit (8-category checklist with Clean/Minor/Blocking verdicts) plus 13 deep-dive
-  audits run via sub-agents: code quality, documentation brittleness, docs-code sync,
-  language best practices, concurrency, resource management, test quality, feature
+  Audit toolkit with 14 audit types: a pre-push branch audit (8-category
+  checklist with Clean/Minor/Blocking verdicts) plus 13 deep-dive audits via
+  sub-agents: code quality, documentation brittleness, docs-code sync, language
+  best practices, concurrency, resource management, test quality, feature
   completeness, performance, bug patterns, design philosophy compliance, security
-  vulnerabilities, and UI design (CRAP principles). Use this skill when the user
-  wants to inspect a concrete codebase, branch, diff, repository, service, or docs/source
-  pair: audit before pushing, check their branch, look for duplication or dead code,
-  check docs-code sync, review test quality, find concurrency bugs or resource leaks,
-  analyze concrete security/performance risks in code, review UI implementation, verify
+  vulnerabilities, and UI design (CRAP). Use when the user wants to inspect a
+  concrete codebase, branch, diff, repository, service, or docs/source pair: audit
+  before pushing, check their branch, look for duplication or dead code, check
+  docs-code sync, review test quality, find concurrency bugs or resource leaks,
+  analyze concrete security/performance risks, review UI implementation, verify
   feature completeness, or check code against best practices/design principles. Do not
   use for conceptual explainers about audits, summarizing audit logs, changelog writing,
   or general security education without code/repo evidence to inspect.
