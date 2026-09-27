@@ -6,3 +6,6 @@ eval-runs/
 __pycache__/
 *.pyc
 node_modules/
+
+# Packaged skill bundles are build artifacts; build them from skills/audit when needed
+*.skill
