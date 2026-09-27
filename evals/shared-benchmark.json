@@ -913,7 +913,8 @@
           "rubric": [
             "Detection accuracy",
             "Impact-level judgment"
-          ]
+          ],
+          "gate": true
         }
       ],
       "tags": [],
@@ -939,7 +940,8 @@
           "type": "judge",
           "rubric": [
             "Use the private answer key; do not rely on public manifest wording."
-          ]
+          ],
+          "gate": true
         }
       ],
       "tags": [
