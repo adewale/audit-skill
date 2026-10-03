@@ -1,0 +1,19 @@
+name: eval-oracles
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  eval-oracles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v9.0.0
+      # Model-free: grades recorded and sample outputs with the pinned harness grader.
+      - name: Self-test eval oracles (known-good and known-bad outputs)
+        run: uvx --from skill-eval-harness==0.6.0 python -m unittest discover -s evals/oracles -v

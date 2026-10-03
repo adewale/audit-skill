@@ -7,11 +7,43 @@
       "expected_output": "Blocking verdict — should find leaked Stripe API key, debug print statements, unrelated README changes, and missing tests for the payments module",
       "files": [],
       "assertions": [
-        {"name": "verdict-is-blocking", "type": "contains_any", "values": ["**Blocking**", "Blocking"]},
-        {"name": "detects-api-key", "type": "contains_any", "values": ["sk_live", "API key", "secret key", "credential", "Stripe"]},
-        {"name": "detects-debug-prints", "type": "contains_any", "values": ["print(", "debug", "DEBUG"]},
-        {"name": "detects-missing-tests", "type": "contains_any", "values": ["test", "coverage", "no corresponding test", "missing test", "untested"]},
-        {"name": "detects-unrelated-changes", "type": "contains_any", "values": ["README", "unrelated", "unintended"]}
+        {
+          "name": "verdict-is-blocking",
+          "type": "regex",
+          "pattern": "\\bverdict\\b\\W{0,12}blocking\\b",
+          "description": "The overall verdict is labelled Blocking (a Blocking cell or legend elsewhere is not a verdict)."
+        },
+        {
+          "name": "no-wrong-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean|minor)\\b"
+        },
+        {
+          "name": "detects-api-key",
+          "type": "contains_any",
+          "values": [
+            "sk_live",
+            "Stripe"
+          ],
+          "description": "Names the leaked Stripe key; generic words like 'credential' also appear in a clean report's checklist."
+        },
+        {
+          "name": "detects-debug-prints",
+          "type": "regex",
+          "pattern": "\\bdebug\\W{0,3}print|print\\(\\)\\W{0,3}(?:debug\\W{0,3})?statement|print\\(f?[\\\"']DEBUG"
+        },
+        {
+          "name": "detects-missing-tests",
+          "type": "regex",
+          "pattern": "\\bno (?:corresponding )?tests?\\b[^\\n]{0,40}(?:payment|refund)|(?:payment|refund)[^\\n]{0,160}\\b(?:no (?:corresponding )?tests|untested|no test coverage)\\b",
+          "description": "Ties the missing tests to the payments code; the word 'test' appears in every report."
+        },
+        {
+          "name": "detects-unrelated-changes",
+          "type": "regex",
+          "pattern": "README[^\\n]{0,120}\\b(?:unrelated|unintended|out of scope)\\b|\\b(?:unrelated|unintended|out of scope)\\b[^\\n]{0,120}README",
+          "description": "Flags the README change as unrelated; mentioning the README is not enough."
+        }
       ]
     },
     {
@@ -20,8 +52,17 @@
       "expected_output": "Clean verdict — focused diff with validators, corresponding tests, good commit message",
       "files": [],
       "assertions": [
-        {"name": "verdict-is-clean", "type": "contains_any", "values": ["**Clean**", "Clean"]},
-        {"name": "no-false-positives", "type": "not_contains_any", "values": ["**Blocking**", "**Minor**"]}
+        {
+          "name": "verdict-is-clean",
+          "type": "regex",
+          "pattern": "\\bverdict\\b\\W{0,12}clean\\b"
+        },
+        {
+          "name": "no-false-positives",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:minor|blocking)\\b",
+          "description": "Was not_contains_any, a type skill-eval-harness does not grade."
+        }
       ]
     },
     {
@@ -30,10 +71,40 @@
       "expected_output": "Minor verdict — should find TODO/FIXME comments, skipped test, fixup commit that should be squashed, but nothing blocking",
       "files": [],
       "assertions": [
-        {"name": "verdict-is-minor", "type": "contains_any", "values": ["**Minor**", "Minor"]},
-        {"name": "detects-todo-comments", "type": "contains_any", "values": ["TODO", "FIXME"]},
-        {"name": "detects-skipped-test", "type": "contains_any", "values": ["skip", "@pytest.mark.skip", "skipped"]},
-        {"name": "detects-fixup-commit", "type": "contains_any", "values": ["fixup", "squash"]}
+        {
+          "name": "verdict-is-minor",
+          "type": "regex",
+          "pattern": "\\bverdict\\b\\W{0,12}minor\\b"
+        },
+        {
+          "name": "no-wrong-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:clean|blocking)\\b"
+        },
+        {
+          "name": "detects-todo-comments",
+          "type": "regex",
+          "pattern": "\\b(?:TODO|FIXME)\\s*:|\\b(?:TODO|FIXME)(?:/FIXME)? comments? (?:left|introduced|in\\b)|\\d+ TODO",
+          "description": "Quotes or counts the TODO/FIXME comments; a clean report also says 'no TODO/FIXME markers'."
+        },
+        {
+          "name": "detects-skipped-test",
+          "type": "contains_any",
+          "values": [
+            "pytest.mark.skip",
+            "skipped test",
+            "test is skipped",
+            "skips the"
+          ]
+        },
+        {
+          "name": "detects-fixup-commit",
+          "type": "contains_any",
+          "values": [
+            "fixup!"
+          ],
+          "description": "The fixup! commit itself; 'no fixup or squash-candidate commits' is a clean report's checklist line."
+        }
       ]
     }
   ]

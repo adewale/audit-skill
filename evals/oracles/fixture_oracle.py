@@ -19,13 +19,19 @@ CHECKS = {
         "before auth",
         "unauthenticated",
         "mounted before"
-      ],
-      [
-        "Severity",
-        "Blocking",
-        "High",
-        "verdict"
       ]
+    ],
+    # An unauthenticated admin export is a reachable security hole: the rating must be
+    # Blocking/Critical/High (a label after "verdict"/"severity", or a table cell), and the
+    # overall verdict must not be Clean.
+    "regex": [
+      (
+        r"\b(?:verdict|severity)\b[\s\S]{0,40}?\b(?:blocking|critical|high)\b"
+        r"|\|\s*\**(?:blocking|critical|high)\**\s*\|"
+      )
+    ],
+    "forbid": [
+      r"\bverdict\b\W{0,12}clean\b"
     ]
   }
 }
