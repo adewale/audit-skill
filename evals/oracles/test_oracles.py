@@ -68,14 +68,17 @@ class BranchAuditOracles(unittest.TestCase):
                     )
 
     def test_verdict_passes_own_report_and_fails_every_other(self) -> None:
+        # Each assertion on its own: the harness scores them one by one, so a loose
+        # verdict-is-* inflates the pass rate even when its no-* partner rejects the report.
         for cid, assertions in self.cases.items():
             verdict = [a for a in assertions if a["name"].startswith(VERDICT_PREFIXES)]
             self.assertTrue(verdict, cid)
-            for scenario, reports in self.reports.items():
-                for path, text in reports:
-                    with self.subTest(case=cid, report=path):
-                        passed = all(grade(a, text)["passed"] for a in verdict)
-                        self.assertEqual(passed, scenario == SCENARIO[cid])
+            for a in verdict:
+                for scenario, reports in self.reports.items():
+                    for path, text in reports:
+                        with self.subTest(case=cid, assertion=a["name"], report=path):
+                            passed = grade(a, text)["passed"]
+                            self.assertEqual(passed, scenario == SCENARIO[cid])
 
     def test_detections_pass_own_report(self) -> None:
         for cid, assertions in self.cases.items():
