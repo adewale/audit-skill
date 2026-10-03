@@ -1,9 +1,10 @@
 """Known-good / known-bad self-tests for the repo-owned eval oracles.
 
 - evals/evals.json: the branch-audit assertions are graded against the recorded
-  reports in audit-workspace/iteration-{1,2}. A report must pass its own case's
-  verdict assertions and fail every other case's; the clean-branch report (which
-  states that none of the planted issues exist) must fail every detection assertion.
+  with_skill reports in audit-workspace/iteration-{1,2} (each verdict assertion
+  alone must accept exactly the reports whose verdict its case allows; each detection
+  must pass its own scenario's reports and fail the other scenarios'), plus short
+  good phrasings and near-miss lines (negated checklist lines, legends) per assertion.
 - evals/oracles/fixture_oracle.py: run through the manifest's own script
   assertion, so the command, cwd and {output_dir} substitution are the real ones.
 
@@ -11,6 +12,9 @@ Everything is graded with the pinned harness's grader (skill_benchmark.assertion
 not a re-implementation, so run it with the harness installed:
 
     uvx --from skill-eval-harness==0.6.0 python -m unittest discover -s evals/oracles -v
+
+Known limit: substring/regex graders cannot tell every negation from a finding
+("payments is well covered; no tests are skipped"); the judge rubric owns those.
 """
 
 from __future__ import annotations
@@ -30,7 +34,88 @@ SCENARIO = {
     2: "clean-branch-clean",
     3: "mixed-branch-minor",
 }
+# The verdict each recorded with_skill report gives (read from its "Verdict" line).
+REPORT_VERDICT = {
+    "dirty-branch-blocking": "blocking",
+    "clean-branch-clean": "clean",
+    "mixed-branch-minor": "minor",
+}
+# Case 3 was written expecting Minor, but SKILL.md's calibration lists skipped tests as Blocking.
+CASE_ACCEPTS = {1: {"blocking"}, 2: {"clean"}, 3: {"minor", "blocking"}}
 VERDICT_PREFIXES = ("verdict-", "no-")
+
+VERDICT_GOOD = {
+    "blocking": [
+        "The verdict is Blocking.",
+        "Overall: **Blocking**",
+        "| Verdict | Blocking |",
+    ],
+    "minor": ["The verdict is Minor.", "## Verdict: **Minor**"],
+    "clean": ["The verdict is Clean.", "## Verdict\n\n**Clean** -- no findings."],
+}
+VERDICT_NEAR_MISS = [
+    "Verdict legend: Clean, Minor, Blocking.",
+    "| # | Category | Finding | Severity |\n| 1 | Secrets | none | Blocking |",
+    "Nothing here is too minor to list.",
+    "The skill gives a Clean/Minor/Blocking verdict.",
+]
+
+# Short phrasings a correct report might use instead of the recorded wording.
+DETECTION_GOOD = {
+    "detects-api-key": ["A live secret key (`sk_l…`) is hard-coded in payments.py"],
+    "detects-debug-prints": [
+        "Leftover `print()` calls in process_payment",
+        "Debugging print statements left in src/payments.py",
+    ],
+    "detects-missing-tests": [
+        "Missing tests for the payments module",
+        "There are no unit tests for the payment code",
+        "`payments.py` lacks tests",
+    ],
+    "detects-unrelated-changes": [
+        "| 4 | `README.md` | Unrelated wording change outside the branch's purpose | Minor |",
+        "Unintended changes: the README edit is out of scope for a payments branch.",
+        "README edits don't belong in this branch",
+    ],
+    "detects-todo-comments": [
+        "`# TODO add eviction` left in cache.py",
+        "Leftover TODO and FIXME markers",
+        "Two TODO/FIXME comments were added",
+    ],
+    "detects-skipped-test": [
+        "`test_expiry` is skipped with `@unittest.skip`",
+        "A test is marked skip",
+    ],
+    "detects-fixup-commit": [
+        "A fixup commit should be squashed before push",
+        "Commit `a1b2c3 fixup: typo` should be squashed",
+    ],
+}
+# Checklist lines a clean report prints, and look-alikes: none of them is a finding.
+DETECTION_NEAR_MISS = {
+    "detects-api-key": [
+        "Secrets and credentials: no API keys, tokens or secret keys found."
+    ],
+    "detects-debug-prints": [
+        "Debug artifacts: no `console.log`, `print()`, `debugger` found."
+    ],
+    "detects-missing-tests": [
+        "`cache_keys()` has no test coverage.",
+        "New code in validators.py has dedicated tests.",
+    ],
+    "detects-unrelated-changes": [
+        "The README references `pip install -r requirements.txt` but the file is missing.",
+        "## 1. Unintended changes\n\nNone found.",
+    ],
+    "detects-todo-comments": [
+        "Debug artifacts: no `TODO`/`FIXME`/`HACK`/`XXX` markers found in the diff."
+    ],
+    "detects-skipped-test": [
+        "No skipped or disabled tests.",
+        "Tests use `pytest.mark.parametrize`.",
+    ],
+    "detects-fixup-commit": ["Commit hygiene: no fixup or squash-candidate commits."],
+}
 
 
 def grade(assertion: dict, text: str) -> dict:
@@ -53,6 +138,21 @@ class BranchAuditOracles(unittest.TestCase):
         cls.cases = {e["id"]: e["assertions"] for e in evals}
         cls.reports = {s: recorded(s) for s in SCENARIO.values()}
 
+    def verdicts(self, cid: int) -> list[dict]:
+        found = [a for a in self.cases[cid] if a["name"].startswith(VERDICT_PREFIXES)]
+        self.assertTrue(found, cid)
+        return found
+
+    def detections(self) -> list[tuple[int, dict]]:
+        found = [
+            (cid, a)
+            for cid, assertions in self.cases.items()
+            for a in assertions
+            if not a["name"].startswith(VERDICT_PREFIXES)
+        ]
+        self.assertEqual({a["name"] for _, a in found}, set(DETECTION_GOOD))
+        return found
+
     def test_cases_and_samples_are_present(self) -> None:
         self.assertEqual(set(self.cases), set(SCENARIO))
         for scenario, reports in self.reports.items():
@@ -67,60 +167,62 @@ class BranchAuditOracles(unittest.TestCase):
                         grade(a, "")["evidence"], "qualitative/deferred"
                     )
 
-    def test_verdict_passes_own_report_and_fails_every_other(self) -> None:
+    def test_each_verdict_assertion_accepts_exactly_the_allowed_reports(self) -> None:
         # Each assertion on its own: the harness scores them one by one, so a loose
         # verdict-is-* inflates the pass rate even when its no-* partner rejects the report.
-        for cid, assertions in self.cases.items():
-            verdict = [a for a in assertions if a["name"].startswith(VERDICT_PREFIXES)]
-            self.assertTrue(verdict, cid)
-            for a in verdict:
+        for cid in self.cases:
+            for a in self.verdicts(cid):
                 for scenario, reports in self.reports.items():
                     for path, text in reports:
                         with self.subTest(case=cid, assertion=a["name"], report=path):
-                            passed = grade(a, text)["passed"]
-                            self.assertEqual(passed, scenario == SCENARIO[cid])
+                            expected = REPORT_VERDICT[scenario] in CASE_ACCEPTS[cid]
+                            self.assertEqual(grade(a, text)["passed"], expected)
+                for verdict, texts in VERDICT_GOOD.items():
+                    for text in texts:
+                        with self.subTest(case=cid, assertion=a["name"], text=text):
+                            expected = verdict in CASE_ACCEPTS[cid]
+                            self.assertEqual(grade(a, text)["passed"], expected)
 
-    def test_detections_pass_own_report(self) -> None:
-        for cid, assertions in self.cases.items():
-            for a in assertions:
-                # No recorded report flags the README change as unrelated; see the synthetic samples below.
-                if (
-                    a["name"].startswith(VERDICT_PREFIXES)
-                    or a["name"] == "detects-unrelated-changes"
-                ):
-                    continue
-                for path, text in self.reports[SCENARIO[cid]]:
-                    with self.subTest(case=cid, assertion=a["name"], report=path):
-                        self.assertTrue(
-                            grade(a, text)["passed"], grade(a, text)["evidence"]
-                        )
-
-    def test_detections_fail_on_clean_report(self) -> None:
-        # The clean report's checklist names every category ("no API keys", "no TODO/FIXME markers",
-        # "no fixup commits"), so vocabulary-only assertions pass on it.
-        for cid in (1, 3):
-            for a in self.cases[cid]:
-                if a["name"].startswith(VERDICT_PREFIXES):
-                    continue
-                for path, text in self.reports[SCENARIO[2]]:
-                    with self.subTest(case=cid, assertion=a["name"], report=path):
+    def test_verdict_near_misses_are_not_verdicts(self) -> None:
+        for cid in self.cases:
+            positive = [
+                a for a in self.verdicts(cid) if a["name"].startswith("verdict-")
+            ]
+            for a in positive:
+                for text in VERDICT_NEAR_MISS:
+                    with self.subTest(case=cid, assertion=a["name"], text=text):
                         self.assertFalse(grade(a, text)["passed"])
 
-    def test_unrelated_change_needs_a_judgement_not_a_mention(self) -> None:
-        (a,) = [a for a in self.cases[1] if a["name"] == "detects-unrelated-changes"]
-        good = [
-            "| 4 | `README.md` | Unrelated wording change outside the branch's purpose | Minor |",
-            "Unintended changes: the README edit is out of scope for a payments branch.",
-        ]
-        bad = [
-            "The README references `pip install -r requirements.txt` but the file is missing."
-        ]
-        for text in good:
-            with self.subTest(expect="pass", text=text):
-                self.assertTrue(grade(a, text)["passed"])
-        for text in bad:
-            with self.subTest(expect="fail", text=text):
-                self.assertFalse(grade(a, text)["passed"])
+    def test_detections_pass_own_report_and_good_phrasings(self) -> None:
+        for cid, a in self.detections():
+            samples = list(self.reports[SCENARIO[cid]])
+            # No recorded report flags the README change as unrelated (iteration-1 says
+            # "Unintended changes: No findings"), so that assertion relies on the phrasings.
+            if a["name"] == "detects-unrelated-changes":
+                samples = []
+            samples += [("good", t) for t in DETECTION_GOOD[a["name"]]]
+            for path, text in samples:
+                with self.subTest(
+                    case=cid, assertion=a["name"], sample=path, text=text[:60]
+                ):
+                    self.assertTrue(grade(a, text)["passed"])
+
+    def test_detections_fail_on_other_reports_and_near_misses(self) -> None:
+        # The clean report's checklist names every category ("no API keys", "no TODO/FIXME
+        # markers", "no fixup commits"), so vocabulary-only assertions pass on it.
+        for cid, a in self.detections():
+            samples = [
+                (path, text)
+                for scenario, reports in self.reports.items()
+                if scenario != SCENARIO[cid]
+                for path, text in reports
+            ]
+            samples += [("near-miss", t) for t in DETECTION_NEAR_MISS[a["name"]]]
+            for path, text in samples:
+                with self.subTest(
+                    case=cid, assertion=a["name"], sample=path, text=text[:60]
+                ):
+                    self.assertFalse(grade(a, text)["passed"])
 
 
 AUTH_FINDING = "`server.ts`: `/admin/export` is mounted before `requireAuth`, so it is reachable unauthenticated."
@@ -155,6 +257,8 @@ class FixtureOracle(unittest.TestCase):
             "**Severity:** High",
             "## Verdict: **Blocking**",
             "| 1 | server.ts | auth order | Critical |",
+            "This is a high-severity finding.",
+            "**Risk:** High",
         ):
             with self.subTest(rating=rating):
                 result = self.run_oracle(
@@ -163,9 +267,15 @@ class FixtureOracle(unittest.TestCase):
                 self.assertTrue(result["passed"], result["evidence"])
 
     def test_wrong_or_missing_rating_fails(self) -> None:
+        filler = "The handler streams every customer row as JSON to the caller. " * 2
         bad = {
             "low severity": f"{AUTH_FINDING}\n\n**Severity:** Low",
+            "medium severity": f"{AUTH_FINDING}\n\n**Severity:** Medium",
+            "low, 'High' in a parenthesis": f"{AUTH_FINDING}\n\n**Severity:** Low (not High)",
+            "low, 'High' much later": f"{AUTH_FINDING}\n\n**Severity:** Low. {filler}High-level summary follows.",
             "clean verdict": f"{AUTH_FINDING}\n\n**Severity:** High\n\n## Verdict: Clean",
+            "clean verdict in a table": f"{AUTH_FINDING}\n\n**Severity:** High\n\n| Verdict | Clean |",
+            "clean verdict as a sentence": f"{AUTH_FINDING}\n\n**Severity:** High\n\nThe verdict is Clean.",
             "unrated, 'high' only inside a word": f"I highlight one issue. {AUTH_FINDING}",
             "unrated, scale named only": f"Severity and verdict follow the skill's scale. {AUTH_FINDING}",
             "rated, route not cited": "**Severity:** High\n\nAn admin route is mounted before requireAuth.",

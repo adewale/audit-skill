@@ -10,38 +10,40 @@
         {
           "name": "verdict-is-blocking",
           "type": "regex",
-          "pattern": "\\bverdict\\b\\W{0,12}blocking\\b",
+          "pattern": "\\b(?:verdict|overall)\\b(?:\\W+is)?\\W{0,12}blocking\\b",
           "description": "The overall verdict is labelled Blocking (a Blocking cell or legend elsewhere is not a verdict)."
         },
         {
           "name": "no-wrong-verdict",
           "type": "not_regex",
-          "pattern": "\\bverdict\\b\\W{0,12}(?:clean|minor)\\b"
+          "pattern": "\\b(?:verdict|overall)\\b(?:\\W+is)?\\W{0,12}(?:clean|minor)\\b"
         },
         {
           "name": "detects-api-key",
           "type": "contains_any",
           "values": [
             "sk_live",
-            "Stripe"
+            "sk_l",
+            "Stripe",
+            "live secret key"
           ],
           "description": "Names the leaked Stripe key; generic words like 'credential' also appear in a clean report's checklist."
         },
         {
           "name": "detects-debug-prints",
           "type": "regex",
-          "pattern": "\\bdebug\\W{0,3}print|print\\(\\)\\W{0,3}(?:debug\\W{0,3})?statement|print\\(f?[\\\"']DEBUG"
+          "pattern": "\\bdebug\\w*\\W{0,3}print|print\\(\\)\\W{0,3}(?:debug\\W{0,3})?(?:statements?|calls?)\\b|leftover\\W{0,3}print|debug output via print|print\\(f?[\\\"']DEBUG"
         },
         {
           "name": "detects-missing-tests",
           "type": "regex",
-          "pattern": "\\bno (?:corresponding )?tests?\\b[^\\n]{0,40}(?:payment|refund)|(?:payment|refund)[^\\n]{0,160}\\b(?:no (?:corresponding )?tests|untested|no test coverage)\\b",
+          "pattern": "\\b(?:no|missing|zero|lacks?)\\b[^\\n]{0,20}\\btests?\\b[^\\n]{0,40}(?:payment|refund)|(?:payment|refund)[^\\n]{0,160}(?:\\bno (?:corresponding |unit )?tests\\b|\\buntested\\b|\\b(?:no|zero) test coverage\\b|\\blacks? tests\\b)",
           "description": "Ties the missing tests to the payments code; the word 'test' appears in every report."
         },
         {
           "name": "detects-unrelated-changes",
           "type": "regex",
-          "pattern": "README[^\\n]{0,120}\\b(?:unrelated|unintended|out of scope)\\b|\\b(?:unrelated|unintended|out of scope)\\b[^\\n]{0,120}README",
+          "pattern": "README[^\\n]{0,120}(?:\\b(?:unrelated|unintended|out of scope)\\b|n't belong|not belong)|\\b(?:unrelated|unintended|out of scope)\\b[^\\n]{0,120}README",
           "description": "Flags the README change as unrelated; mentioning the README is not enough."
         }
       ]
@@ -55,55 +57,49 @@
         {
           "name": "verdict-is-clean",
           "type": "regex",
-          "pattern": "\\bverdict\\b\\W{0,12}clean\\b"
+          "pattern": "\\b(?:verdict|overall)\\b(?:\\W+is)?\\W{0,12}clean\\b"
         },
         {
           "name": "no-false-positives",
           "type": "not_regex",
-          "pattern": "\\bverdict\\b\\W{0,12}(?:minor|blocking)\\b",
-          "description": "Was not_contains_any, a type skill-eval-harness does not grade."
+          "pattern": "\\b(?:verdict|overall)\\b(?:\\W+is)?\\W{0,12}(?:minor|blocking)\\b",
+          "description": "Was not_contains_any, which skill-eval-harness 0.6.0 does not grade (it reports it deferred and failed)."
         }
       ]
     },
     {
       "id": 3,
       "prompt": "can you check what I'm about to push? want to make sure nothing weird is in there",
-      "expected_output": "Minor verdict — should find TODO/FIXME comments, skipped test, fixup commit that should be squashed, but nothing blocking",
+      "expected_output": "Non-Clean verdict — should find TODO/FIXME comments, skipped test, fixup commit. Written expecting Minor; SKILL.md now calibrates skipped/disabled tests as Blocking, so Minor or Blocking passes.",
       "files": [],
       "assertions": [
         {
-          "name": "verdict-is-minor",
+          "name": "verdict-is-not-clean",
           "type": "regex",
-          "pattern": "\\bverdict\\b\\W{0,12}minor\\b"
+          "pattern": "\\b(?:verdict|overall)\\b(?:\\W+is)?\\W{0,12}(?:minor|blocking)\\b",
+          "description": "The branch has a skipped test and an untested function: the case was written expecting Minor, but SKILL.md's calibration now lists skipped/disabled tests as Blocking, so either non-Clean verdict is accepted."
         },
         {
-          "name": "no-wrong-verdict",
+          "name": "no-clean-verdict",
           "type": "not_regex",
-          "pattern": "\\bverdict\\b\\W{0,12}(?:clean|blocking)\\b"
+          "pattern": "\\b(?:verdict|overall)\\b(?:\\W+is)?\\W{0,12}clean\\b"
         },
         {
           "name": "detects-todo-comments",
           "type": "regex",
-          "pattern": "\\b(?:TODO|FIXME)\\s*:|\\b(?:TODO|FIXME)(?:/FIXME)? comments? (?:left|introduced|in\\b)|\\d+ TODO",
+          "pattern": "\\b(?:TODO|FIXME)\\s*:|`#\\s*(?:TODO|FIXME)\\b|\\b(?:TODO|FIXME)(?:/FIXME)? (?:comments?|markers?) (?:left|introduced|were added|added|in\\b)|\\b(?:leftover|left|added|introduced|new)\\b[^\\n.]{0,20}\\b(?:TODO|FIXME)\\b|\\d+ (?:TODO|FIXME)",
           "description": "Quotes or counts the TODO/FIXME comments; a clean report also says 'no TODO/FIXME markers'."
         },
         {
           "name": "detects-skipped-test",
-          "type": "contains_any",
-          "values": [
-            "pytest.mark.skip",
-            "skipped test",
-            "test is skipped",
-            "skips the"
-          ]
+          "type": "regex",
+          "pattern": "(?:pytest\\.mark|unittest)\\.skip\\b|\\bskipped test\\b|\\btest\\b[^\\n.]{0,40}\\bis (?:marked )?skip(?:ped)?\\b|\\bskips the\\b|\\bmarked (?:as )?skip"
         },
         {
           "name": "detects-fixup-commit",
-          "type": "contains_any",
-          "values": [
-            "fixup!"
-          ],
-          "description": "The fixup! commit itself; 'no fixup or squash-candidate commits' is a clean report's checklist line."
+          "type": "regex",
+          "pattern": "fixup!|\\bfixup:|\\ba fixup commit\\b|\\bfixup commit (?:should|that|must|needs)",
+          "description": "The fixup commit itself; 'no fixup or squash-candidate commits' is a clean report's checklist line."
         }
       ]
     }
