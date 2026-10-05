@@ -582,10 +582,14 @@
           "name": "avoid-fake-secret-fixture",
           "type": "contains_any",
           "values": [
-            "not",
+            "not a real",
             "no finding"
-          ],
-          "description": "Prompt-echoed values removed by leakage cleanup."
+          ]
+        },
+        {
+          "name": "no-false-positive-verdict",
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}blocking\\b"
         },
         {
           "name": "qualitative-review",
@@ -646,12 +650,8 @@
       "assertions": [
         {
           "name": "avoid-lockfile-paired",
-          "type": "contains_any",
-          "values": [
-            "paired",
-            "expected"
-          ],
-          "description": "Prompt-echoed values removed by leakage cleanup."
+          "type": "not_regex",
+          "pattern": "\\bverdict\\b\\W{0,12}(?:minor|blocking)\\b"
         },
         {
           "name": "qualitative-review",
@@ -679,13 +679,13 @@
       "assertions": [
         {
           "name": "avoid-no-design-philosophy",
-          "type": "contains_any",
-          "values": [
-            "cannot assess",
-            "ask",
-            "not enough"
-          ],
-          "description": "Prompt-echoed values removed by leakage cleanup."
+          "type": "regex",
+          "pattern": "\\bno (?:stated|documented|written) (?:design )?philosoph|cannot assess|not enough"
+        },
+        {
+          "name": "no-high-severity-finding",
+          "type": "not_regex",
+          "pattern": "\\b(?:severity|finding)\\b[^\\n]{0,20}\\b(?:high|critical|blocking)\\b"
         },
         {
           "name": "qualitative-review",
@@ -713,12 +713,13 @@
       "assertions": [
         {
           "name": "avoid-toy-security-clean",
-          "type": "contains_any",
-          "values": [
-            "Clean",
-            "no findings",
-            "do not invent"
-          ]
+          "type": "regex",
+          "pattern": "\\bverdict\\b\\W{0,12}clean\\b|\\bno findings\\b"
+        },
+        {
+          "name": "no-high-severity-finding",
+          "type": "not_regex",
+          "pattern": "\\bseverity\\b\\W{0,12}(?:high|critical|blocking)\\b"
         },
         {
           "name": "qualitative-review",

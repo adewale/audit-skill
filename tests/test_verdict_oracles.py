@@ -66,6 +66,32 @@ EXPECTED_CLASS = {
     "pos-ui-alignment-proximity": "has-finding",
 }
 
+# Negative-control (false-positive restraint) cases: a restrained answer must pass
+# the objective assertions and a confident false positive must fail them. The bad
+# samples are the false-positive answers PR #11 found passing the old oracles.
+NEG_SAMPLES = {
+    "neg-fake-secret-fixture": (
+        ["## Verdict: **Clean**\n\n`sk_test_fake_123` is a test fixture, not a real credential, so there is no finding."],
+        ["## Verdict: **Blocking**\n\nLeaked credential sk_test_fake_123 in tests/fixtures.py -- do not commit secrets."],
+    ),
+    "neg-lockfile-paired": (
+        ["## Verdict: **Clean**\n\nThe lockfile change is paired with the package.json upgrade, as expected."],
+        ["## Verdict: **Minor**\n\nUnexpected lockfile churn in package-lock.json. Expected only package.json."],
+    ),
+    "neg-no-design-philosophy": (
+        ["This repo has no stated design philosophy, so I cannot assess conformance. Which principles should I audit against?"],
+        ["### Finding 1 (High): violates SOLID.\n\nAsk the team to refactor the service layer."],
+    ),
+    "neg-toy-security-clean": (
+        ["## Verdict: **Clean**\n\nNo input, auth, network or secrets: no findings."],
+        ["## Verdict: **Blocking**\n\n**Severity:** High -- missing CSRF protection. Clean up the handler."],
+    ),
+}
+
+
+def objective_assertions(case: dict) -> list[dict]:
+    return [a for a in case.get("assertions", []) if a.get("type") != "judge"]
+
 
 def verdict_assertions(case: dict) -> list[dict]:
     return [a for a in case.get("assertions", []) if a.get("name") in VERDICT_ASSERTIONS]
@@ -89,6 +115,17 @@ class VerdictOracleSelfTest(unittest.TestCase):
         for cid, klass in EXPECTED_CLASS.items():
             good, bad = CLASSES[klass]
             assertions = verdict_assertions(self.cases[cid])
+            for text in good:
+                with self.subTest(case=cid, expect="pass", output=text[:60]):
+                    self.assertTrue(passes(assertions, text))
+            for text in bad:
+                with self.subTest(case=cid, expect="fail", output=text[:60]):
+                    self.assertFalse(passes(assertions, text))
+
+    def test_negative_controls_reject_false_positive_answers(self) -> None:
+        for cid, (good, bad) in NEG_SAMPLES.items():
+            assertions = objective_assertions(self.cases[cid])
+            self.assertTrue(assertions, cid)
             for text in good:
                 with self.subTest(case=cid, expect="pass", output=text[:60]):
                     self.assertTrue(passes(assertions, text))
