@@ -3,14 +3,25 @@
 This repo participates in the shared Skill Eval Harness:
 
 - Repo: https://github.com/adewale/skill-eval-harness
-- Version: `>=0.3.0`
+- Version: `==0.6.0` (pinned; the same pin is in the manifest's `harness.version` and in CI)
 - Manifest: `evals/shared-benchmark.json`
 
-Install the harness from GitHub with [uv](https://docs.astral.sh/uv/):
+Install the pinned harness from PyPI with [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv tool install git+https://github.com/adewale/skill-eval-harness.git@v0.3.0
+uv tool install skill-eval-harness==0.6.0
 ```
+
+CI runs the model-free gate on every push and PR as steps of the existing `install-boundary` job (`.github/workflows/install-boundary.yml`); no model or API key is involved, and the four commands take about 4 seconds:
+
+```sh
+uvx --from skill-eval-harness==0.6.0 skill-benchmark validate --strict-leakage --check-ablations evals/shared-benchmark.json
+uvx --from skill-eval-harness==0.6.0 skill-benchmark audit-manifest evals/shared-benchmark.json --fail-on-blockers
+uvx --from skill-eval-harness==0.6.0 python -m unittest discover -s tests -v
+uvx --from skill-eval-harness==0.6.0 python -m unittest discover -s evals/oracles -v
+```
+
+The third command self-tests the severity/verdict oracles: each verdict-graded case must accept its expected verdict and reject a wrong one (`tests/test_verdict_oracles.py`). The fourth grades the `evals/evals.json` assertions and `evals/oracles/fixture_oracle.py` against the recorded `audit-workspace` reports and fixed good and near-miss samples (`evals/oracles/test_oracles.py`).
 
 Splits:
 - `tune` — visible iteration cases.
