@@ -2,6 +2,18 @@
 
 All notable changes to Audit Skill are documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- Shortened the `SKILL.md` description from 1,064 to 1,007 characters (the Agent Skills limit is 1,024) and added `scripts/check_skill_frontmatter.py` to CI.
+- `has-severity-verdict` eval assertions now require each case's expected verdict instead of accepting any label, with oracle self-tests in `tests/test_verdict_oracles.py`.
+- Pinned the shared eval harness to `==0.6.0` and run its model-free manifest gate in CI; trigger cases declare `should_trigger`.
+
+### Removed
+
+- The committed `audit-skill.skill` bundle, a stale March 2026 snapshot of the whole repository (including `.git/` and `.claude/settings.local.json`). `scripts/check_install_boundary.py` now also scans every `*.skill`/`*.zip` in the repo and fails unless it is an exact copy of a declared skill directory.
+
 ## [1.0.2] - 2026-06-13
 
 ### Changed

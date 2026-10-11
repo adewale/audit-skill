@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
+import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BANNED_DIR_NAMES = {
+    ".claude",
     ".git",
     ".github",
     "__pycache__",
@@ -20,6 +23,9 @@ BANNED_DIR_NAMES = {
 }
 BANNED_FILE_SUFFIXES = {".pyc", ".pyo"}
 BANNED_FILE_NAMES = {".DS_Store"}
+# Packaged skills (e.g. a `.skill` upload bundle) are install artifacts too: scan every one in the repo.
+ARCHIVE_SUFFIXES = {".skill", ".zip"}
+ARCHIVE_SCAN_SKIP_DIRS = {".git", "node_modules"}
 
 
 def load_json(path: Path) -> dict:
@@ -71,6 +77,74 @@ def bad_files(skill_dir: Path) -> list[Path]:
     return bad
 
 
+def is_banned(rel_parts: tuple[str, ...]) -> bool:
+    return any(part in BANNED_DIR_NAMES for part in rel_parts[:-1]) or (
+        bool(rel_parts)
+        and (rel_parts[-1] in BANNED_DIR_NAMES or rel_parts[-1] in BANNED_FILE_NAMES or Path(rel_parts[-1]).suffix in BANNED_FILE_SUFFIXES)
+    )
+
+
+def repo_archives() -> list[Path]:
+    found: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(ROOT):
+        dirnames[:] = sorted(d for d in dirnames if d not in ARCHIVE_SCAN_SKIP_DIRS)
+        found.extend(Path(dirpath) / f for f in sorted(filenames) if Path(f).suffix.lower() in ARCHIVE_SUFFIXES)
+    return found
+
+
+def skill_snapshot(skill_dir: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(skill_dir).as_posix(): path.read_bytes()
+        for path in skill_dir.rglob("*")
+        if path.is_file() and not is_banned(path.relative_to(skill_dir).parts)
+    }
+
+
+def archive_errors(archive: Path, skill_dirs: list[Path]) -> list[str]:
+    """An archive may only hold an exact, current copy of one declared skill directory."""
+    display = archive.relative_to(ROOT)
+    try:
+        with zipfile.ZipFile(archive) as bundle:
+            entries = {info.filename: bundle.read(info) for info in bundle.infolist() if not info.is_dir()}
+    except (zipfile.BadZipFile, OSError) as exc:
+        return [f"{display}: not a readable zip archive ({exc})"]
+    errors: list[str] = []
+    banned = sorted(name for name in entries if is_banned(tuple(name.split("/"))))
+    if banned:
+        sample = ", ".join(banned[:10])
+        suffix = f"; +{len(banned) - 10} more" if len(banned) > 10 else ""
+        errors.append(f"{display}: {len(banned)} repo-only entries: {sample}{suffix}")
+    # `.skill` bundles usually wrap the skill in one top-level folder; compare relative to it.
+    tops = {name.split("/", 1)[0] for name in entries}
+    if len(tops) == 1 and all("/" in name for name in entries):
+        entries = {name.split("/", 1)[1]: data for name, data in entries.items()}
+    for skill_dir in skill_dirs:
+        if skill_dir.is_dir() and entries == skill_snapshot(skill_dir):
+            return errors
+    closest = min(
+        (d for d in skill_dirs if d.is_dir()),
+        key=lambda d: len(set(entries) ^ set(skill_snapshot(d))),
+        default=None,
+    )
+    if closest is None:
+        errors.append(f"{display}: no declared skill directory to compare against")
+        return errors
+    current = skill_snapshot(closest)
+    extra = sorted(set(entries) - set(current))
+    missing = sorted(set(current) - set(entries))
+    changed = sorted(name for name in set(entries) & set(current) if entries[name] != current[name])
+    detail = "; ".join(
+        f"{label}: {', '.join(names[:5])}{' ...' if len(names) > 5 else ''} ({len(names)})"
+        for label, names in (("not in skill dir", extra), ("missing from archive", missing), ("stale", changed))
+        if names
+    )
+    errors.append(
+        f"{display}: is not an exact copy of {closest.resolve().relative_to(ROOT.resolve())} ({detail}); "
+        "delete it or rebuild it from the skill directory"
+    )
+    return errors
+
+
 def main() -> int:
     dirs = declared_skill_dirs()
     if not dirs:
@@ -93,11 +167,15 @@ def main() -> int:
             sample = ", ".join(str(p.relative_to(ROOT)) for p in bad[:20])
             suffix = f"; +{len(bad) - 20} more" if len(bad) > 20 else ""
             errors.append(f"{display}: repo-only artifacts found: {sample}{suffix}")
+    archives = repo_archives()
+    for archive in archives:
+        errors.extend(archive_errors(archive, dirs))
     if errors:
         for error in errors:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
     print("OK: installable skill boundary is clean: " + ", ".join(str(d.resolve().relative_to(ROOT.resolve())) for d in dirs))
+    print(f"OK: {len(archives)} packaged skill archive(s) (*.skill, *.zip) checked" + "".join(f"\n  {a.relative_to(ROOT)}" for a in archives))
     return 0
 
 
