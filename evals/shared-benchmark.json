@@ -1080,6 +1080,70 @@
       "success_goals": [
         "outcome"
       ]
+    },
+    {
+      "id": "tune-cleanup-existing-pr",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Audit proposed CI waste removal. Open PR #27 already removes duplicate feature-branch push lint and retains PR/main/v* tag lint; its inspected diff matches the finding. The user authorizes updating existing PRs. An incident also exposed a missing signature check at webhook admission, which has an existing integration test suite. Should you open another CI cleanup PR and add a nightly signature-check workflow?",
+      "expected_behavior": [
+        "Prefer updating PR #27 with additional evidence rather than opening a competing PR for its existing scope.",
+        "State the duplicate-run cost and the PR/main/tag coverage to preserve, with verification appropriate to event behavior.",
+        "Put the incident regression check at webhook admission using the existing suite; require a distinct coverage reason before adding another schedule."
+      ],
+      "assertions": [
+        {
+          "name": "maintenance-evidence",
+          "type": "judge",
+          "gate": true,
+          "rubric": [
+            "Prefer updating PR #27 with additional evidence rather than opening a competing PR for its existing scope.",
+            "State the duplicate-run cost and the PR/main/tag coverage to preserve, with verification appropriate to event behavior.",
+            "Put the incident regression check at webhook admission using the existing suite; require a distinct coverage reason before adding another schedule."
+          ]
+        }
+      ],
+      "tags": [
+        "maintenance",
+        "evidence-scope"
+      ],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "tune-no-safe-cut",
+      "split": "tune",
+      "kind": "audit-output",
+      "prompt": "Audit a branch for low-value ceremony. Two validation commands look similar, but one checks fork PRs without secrets and the other checks release credentials on tags. A proposed deletion is in the rejection ledger for that exact loss of coverage; no new evidence changes the rationale. Everything else inspected has a concrete current consumer. Produce the audit outcome.",
+      "expected_behavior": [
+        "Do not repeat the rejected deletion or invent cleanup to satisfy a quota.",
+        "Explain the distinct trust and release coverage and allow zero actionable findings within the inspected scope.",
+        "Do not assert the entire repository is safe beyond the inspected evidence."
+      ],
+      "assertions": [
+        {
+          "name": "maintenance-evidence",
+          "type": "judge",
+          "gate": true,
+          "rubric": [
+            "Do not repeat the rejected deletion or invent cleanup to satisfy a quota.",
+            "Explain the distinct trust and release coverage and allow zero actionable findings within the inspected scope.",
+            "Do not assert the entire repository is safe beyond the inspected evidence."
+          ]
+        }
+      ],
+      "tags": [
+        "maintenance",
+        "evidence-scope"
+      ],
+      "domain": "code-audit",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     }
   ],
   "ablations": [

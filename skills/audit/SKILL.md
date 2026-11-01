@@ -33,6 +33,30 @@ They can also request multiple audits at once.
 
 ---
 
+## Maintenance cleanup evidence
+
+For audits proposing cleanup, inspect relevant open PRs and any rejection ledger
+before recommending work. Compare the actual diff and rationale, not titles alone.
+Add evidence to an existing PR when it addresses the same problem and updating it
+is authorized; otherwise recommend that route instead of opening a competing PR.
+Do not repeat a rejected proposal without new evidence that addresses the rejection.
+
+For each proposed cut, name the current cost, the behavior or guarantee that must
+remain, and the evidence that verifies it. Trace callers, event coverage, and
+instructions before deleting tooling. A shorter file or similar-looking job is
+insufficient evidence. For example, two CI jobs may serve different permissions or
+release events even when their commands match.
+
+When an incident exposed a missing guard, put the regression check at the boundary
+that owns the failure. Reuse it from other entrypoints where necessary; adding a
+second scheduled workflow for the same check needs a distinct coverage reason.
+Keep independent checks when they catch different failure modes.
+
+Zero actionable findings is a valid outcome. Do not invent cleanup to meet a quota
+or expand a clean verdict beyond the inspected scope. State unverified guarantees
+and unresolved risks; if safe removal cannot be shown, retain the code or propose
+a specific investigation.
+
 # Branch Audit
 
 ## Step 1: Gather context
