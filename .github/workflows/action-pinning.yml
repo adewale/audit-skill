@@ -18,11 +18,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          # Orphan gitlink fixtures make checkout's recursive auth cleanup fail.
-          # Remove this version's HTTP header directly in the next step instead.
-          persist-credentials: true
-      - name: Remove checkout authentication before auditing
-        run: git config --local --unset-all http.https://github.com/.extraheader
+          persist-credentials: false
       - name: Install checksum-verified zizmor
         run: |
           echo 'zizmor==1.32.0 --hash=sha256:84a6acb975accc13408786a2bd274b572537ca19c933ebbc13e78f3988562071' > "$RUNNER_TEMP/zizmor-requirements.txt"
